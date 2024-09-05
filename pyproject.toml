@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bioview"
+version = "1.0.0"
+description = "Show the list of readme files and allow viewing them"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE.txt" }
+keywords = ["readme", "viewer"]
+authors = [{ name = "Willem Nieuwenhuis", email = "w.nieuwenhuis@utwente.nl" }]
+maintainers = [
+  { name = "Willem Nieuwenhuis", email = "w.nieuwenhuis@utwente.nl" },
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Resarchers",
+  "Topic :: Research :: Metadata",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = ["pandas", "xlsxwriter", "openpyxl", "scipy"]
+[project.optional-dependencies]
+dev = ["check-manifest", "build"]
+test = ["pytest", "pytest-cov", "flake8", "mock"]
+
+[project.urls]
+"Homepage" = "https://github.com/WillemNieuwenhuis/bioview"
+"Source" = "https://github.com/WillemNieuwenhuis/bioview"
+
+# The following would provide a command line executable called `sample`
+# which executes the function `main` from this package when invoked.
+[project.scripts]
+bioview = "bioview.gui:main"
+
+
+# This is configuration specific to the `setuptools` build backend.
+# If you are using a different build backend, you will need to change this.
+[tool.setuptools]
+# If there are data files included in your packages that need to be
+# installed, specify them here.
+# package-data = {"sample" = ["*.dat"]}
