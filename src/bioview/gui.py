@@ -278,7 +278,7 @@ class MainWindow():
 
 def main():
     mw = MainWindow()
-    mw.build_gui
+    mw.build_gui()
     mw.top.mainloop()
 
 
