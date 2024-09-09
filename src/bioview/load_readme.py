@@ -5,7 +5,10 @@ def read_file_contents(filename):
     '''Read the contents of the file with name filename.
        Check for different possible encodings.
     '''
-    encod = CharsetDetector.get_charset(CharsetDetector.get_input_stream(filename))
+    encod = None
+    with open(filename, 'rb') as file:
+        encod = CharsetDetector.get_charset(file)
+
     if not encod:
         return "Error: Unable to decode file."
     else:
