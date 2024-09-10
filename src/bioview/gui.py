@@ -4,10 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import WORD, CHAR, NONE
 import subprocess
-import os
-import pandas as pd
 from pathlib import PureWindowsPath
-import shutil
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_excel, load_list_from_text
 from bioview.save_readme_changes import save_readme_changes
@@ -121,7 +118,7 @@ class MainWindow():
         self.toggle_wrap_button = tk.Button(
             self.button_bar, text="Wrapping: Off", command=self.toggle_wrap)
         self.save_changes_button = tk.Button(
-            self.button_bar, text="Save Changes", command=self.save_changes)
+            self.button_bar, text="Save Changes", command=self.save_changes_event)
         self.toggle_wrap_button.pack(side="left")
         self.save_changes_button.pack(side="left")
 
@@ -159,16 +156,16 @@ class MainWindow():
             filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")]
         )
         if file_path:
-            self.current_filename = file_path
-            self.load_excel_data(file_path)
+            self.filenames = load_list_from_excel(file_path)
+            self.populate_listbox()
 
     def open_text_file(self):
         file_path = filedialog.askopenfilename(
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
         )
         if file_path:
-            self.current_filename = file_path
-            self.load_text_data(file_path)
+            self.filenames = load_list_from_text(file_path)
+            self.populate_listbox()
 
     # Textfield event handlers
     # --------------------------
@@ -187,20 +184,18 @@ class MainWindow():
         self.textfield.config(wrap=new_wrap)
         self.toggle_wrap_button.config(text=f"Wrapping: {new_wrap_ui.upper()}")
 
-    def save_changes_event(self, event):
-        self.save_changes()
-        return "break"  # Prevent the default behavior
-
-    def save_changes(self):
+    def save_changes_event(self, event=None):
         if not self.textfield.edit_modified:
-            return
+            return "break"
 
         # keep backups and save changes
         save_readme_changes(self.current_filename, self.textfield.get('1.0', tk.END))
         self.textfield.edit_modified(False)
+        return "break"  # Prevent the default behavior
 
     # Listbox event handlers
     # ------------------------
+
     def populate_listbox(self) -> None:
         # Clear the listbox first
         self.listbox.delete(0, tk.END)
@@ -209,19 +204,12 @@ class MainWindow():
         for filename in self.filenames:
             self.listbox.insert(tk.END, pretty_print_name(filename, 50))
 
-    def load_excel_data(self, file_path=None) -> None:
-        '''Load list of readme files from an excel file
-        '''
-        self.filenames = load_list_from_excel(file_path)
+    # def load_text_data(self, file_path: str) -> None:
+    #     '''Load the list of readme files from a text file
+    #     '''
+    #     self.filenames = load_list_from_text(file_path)
 
-        self.populate_listbox()
-
-    def load_text_data(self, file_path: str) -> None:
-        '''Load the list of readme files from a text file
-        '''
-        self.filenames = load_list_from_text(file_path)
-
-        self.populate_listbox()
+    #     self.populate_listbox()
 
     def onListboxSelect(self, _):
         selected_index = self.listbox.curselection()
