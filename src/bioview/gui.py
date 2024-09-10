@@ -8,7 +8,9 @@ import os
 import pandas as pd
 from pathlib import PureWindowsPath
 import shutil
-import bioview.load_readme as load_readme
+from bioview.load_readme import read_file_contents
+from bioview.load_readme_list import load_list_from_excel, load_list_from_text
+from bioview.save_readme_changes import save_readme_changes
 
 
 def pretty_print(path, max_length):
@@ -158,7 +160,7 @@ class MainWindow():
         )
         if file_path:
             self.current_filename = file_path
-            self.load_data(file_path)
+            self.load_excel_data(file_path)
 
     def open_text_file(self):
         file_path = filedialog.askopenfilename(
@@ -193,69 +195,46 @@ class MainWindow():
         if not self.textfield.edit_modified:
             return
 
-        selected_filename = self.current_filename
-
-        # Rename existing backup files by incrementing their version number
-        # start from the last backup file
-        for i in range(4, 0, -1):
-            old_backup = f"{selected_filename}.{i}"
-            new_backup = f"{selected_filename}.{i+1}"
-            # first remove the last backup file to make room
-            if i == 4 and os.path.exists(new_backup):
-                os.remove(new_backup)
-            if os.path.exists(old_backup):
-                os.rename(old_backup, new_backup)
-
-        # Create a new backup file with version number 1
-        backup_filename = f"{selected_filename}.1"
-        shutil.copy(selected_filename, backup_filename)
-
-        # backup_filename = selected_filename + '.bak'
-        # shutil.copy(selected_filename, backup_filename)
-        with open(selected_filename, 'w', encoding='utf-8') as file:
-            file.write(self.textfield.get('1.0', tk.END))
+        # keep backups and save changes
+        save_readme_changes(self.current_filename, self.textfield.get('1.0', tk.END))
         self.textfield.edit_modified(False)
 
     # Listbox event handlers
     # ------------------------
-    def populate_listbox(self):
-        # Clear the listbox
+    def populate_listbox(self) -> None:
+        # Clear the listbox first
         self.listbox.delete(0, tk.END)
 
         # Populate listbox with filenames
         for filename in self.filenames:
             self.listbox.insert(tk.END, pretty_print_name(filename, 50))
 
-    def load_data(self, file_path=None):
+    def load_excel_data(self, file_path=None) -> None:
         '''Load list of readme files from an excel file
         '''
-        self.data = pd.read_excel(file_path, sheet_name='All readme files')
-        self.filenames = self.data['Path'] + '/' + self.data['Name']
+        self.filenames = load_list_from_excel(file_path)
 
         self.populate_listbox()
 
-    def load_text_data(self, file_path):
+    def load_text_data(self, file_path: str) -> None:
         '''Load the list of readme files from a text file
         '''
-        with open(file_path, 'r') as file:
-            lines = file.read().splitlines()
-
-            self.filenames = pd.Series(lines)
+        self.filenames = load_list_from_text(file_path)
 
         self.populate_listbox()
 
-    def onListboxSelect(self, event):
+    def onListboxSelect(self, _):
         selected_index = self.listbox.curselection()
         if selected_index:
             self.current_filename = self.filenames.array[selected_index]
             self.filename_label.config(text=self.current_filename)
             self.loadReadmeFile(self.current_filename)
 
-    def loadReadmeFile(self, filename):
+    def loadReadmeFile(self, filename: str) -> None:
         '''Load the contents of the readme file with name filename into the textfield.
-           Check for different possible encodings 
+           It is checked for different possible encodings 
         '''
-        file_contents = load_readme.read_file_contents(filename)
+        file_contents = read_file_contents(filename)
         self.textfield.delete('1.0', tk.END)
         self.textfield.insert(tk.END, file_contents)
         self.textfield.edit_modified(False)
