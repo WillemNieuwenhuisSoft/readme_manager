@@ -1,5 +1,8 @@
 import locale
+import logging
 from bioview.charset_detector import CharsetDetector
+
+log = logging.getLogger(__name__)
 
 
 def read_file_contents(filename):
@@ -17,7 +20,8 @@ def read_file_contents(filename):
             with open(filename, 'r', encoding=encod) as file:
                 return file.read()
         except UnicodeDecodeError:
-            print(f'File "{filename}" is not utf-8 encoded. Defaulting to system locale.')
+            log.warning(
+                f'File "{filename}" is not utf-8 encoded. Defaulting to system locale.')
             encod = locale.getencoding()
             with open(filename, 'r', encoding=encod) as file:
                 return file.read()
