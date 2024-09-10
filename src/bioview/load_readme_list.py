@@ -1,7 +1,8 @@
+from pathlib import Path
 import pandas as pd
 
 
-def load_list_from_excel(file_path: str) -> pd.Series:
+def load_list_from_excel(file_path: Path) -> pd.Series:
     """
     Load a list readme file locations from an Excel file.
 
@@ -16,7 +17,7 @@ def load_list_from_excel(file_path: str) -> pd.Series:
     return data['Path'] + '/' + data['Name']
 
 
-def load_list_from_text(file_path: str) -> pd.Series:
+def load_list_from_text(file_path: Path) -> pd.Series:
     """
     Load a list readme file locations from a text file.
 

@@ -1,11 +1,12 @@
 import locale
 import logging
+from pathlib import Path
 from bioview.charset_detector import CharsetDetector
 
 log = logging.getLogger(__name__)
 
 
-def read_file_contents(filename):
+def read_file_contents(filename: Path) -> str:
     '''Read the contents of the file with name filename.
        Check for different possible encodings.
     '''
@@ -14,6 +15,7 @@ def read_file_contents(filename):
         encod = CharsetDetector.get_charset(file)
 
     if not encod:
+        log.error(f'Unable to decode file "{filename}".')
         return "Error: Unable to decode file."
     else:
         try:

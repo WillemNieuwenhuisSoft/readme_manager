@@ -4,15 +4,15 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import WORD, CHAR, NONE
 import subprocess
-from pathlib import PureWindowsPath
+from pathlib import Path
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_excel, load_list_from_text
 from bioview.save_readme_changes import save_readme_changes
 
 
-def pretty_print(path, max_length):
+def pretty_print(path: str, max_length: int) -> Path:
     # full folder names
-    parts = PureWindowsPath(path).parts
+    parts = Path(path).parts
     # only first letters
     short_parts = list(map(lambda part: part.lstrip()[0], parts))
 
@@ -32,23 +32,23 @@ def pretty_print(path, max_length):
     if short_end - short_start > 0:
         pretty += "\\" + "\\".join(short_parts[short_start:short_end])
     # then file name
-    return pretty + "\\" + parts[-1]
+    return Path(pretty + "\\" + parts[-1])
 
 
-def pretty_print_name(path, max_length):
+def pretty_print_name(path: str, max_length: int) -> Path:
     ''' Pretty print a path, showing only the name part
     '''
     # full folder names
-    parts = PureWindowsPath(path).parts
+    parts = Path(path).parts
 
     # extract the name only
     pretty = parts[-1]
-    return pretty
+    return Path(pretty)
 
 
 class MainWindow():
 
-    current_filename = None
+    current_filename: Path = None
 
     def onExit(self):
         exit()
@@ -151,31 +151,31 @@ class MainWindow():
 
     # File menu event handlers
     # --------------------------
-    def open_file(self):
+    def open_file(self) -> None:
         file_path = filedialog.askopenfilename(
             filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")]
         )
         if file_path:
-            self.filenames = load_list_from_excel(file_path)
+            self.filenames = load_list_from_excel(Path(file_path))
             self.populate_listbox()
 
-    def open_text_file(self):
+    def open_text_file(self) -> None:
         file_path = filedialog.askopenfilename(
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
         )
         if file_path:
-            self.filenames = load_list_from_text(file_path)
+            self.filenames = load_list_from_text(Path(file_path))
             self.populate_listbox()
 
     # Textfield event handlers
     # --------------------------
-    def modified_flag_changed(self, event):
+    def modified_flag_changed(self, event) -> None:
         if self.textfield.edit_modified():
             self.save_changes_button.config(state=tk.NORMAL)
         else:
             self.save_changes_button.config(state=tk.DISABLED)
 
-    def toggle_wrap(self):
+    def toggle_wrap(self) -> None:
         '''Toggle the wrap option of the textfield
         '''
         current_wrap = self.textfield.cget("wrap")
@@ -184,7 +184,7 @@ class MainWindow():
         self.textfield.config(wrap=new_wrap)
         self.toggle_wrap_button.config(text=f"Wrapping: {new_wrap_ui.upper()}")
 
-    def save_changes_event(self, event=None):
+    def save_changes_event(self, event=None) -> str:
         if not self.textfield.edit_modified:
             return "break"
 
@@ -204,14 +204,14 @@ class MainWindow():
         for filename in self.filenames:
             self.listbox.insert(tk.END, pretty_print_name(filename, 50))
 
-    def onListboxSelect(self, _):
+    def onListboxSelect(self, _) -> None:
         selected_index = self.listbox.curselection()
         if selected_index:
-            self.current_filename = self.filenames.array[selected_index]
+            self.current_filename = Path(self.filenames.array[selected_index])
             self.filename_label.config(text=self.current_filename)
             self.loadReadmeFile(self.current_filename)
 
-    def loadReadmeFile(self, filename: str) -> None:
+    def loadReadmeFile(self, filename: Path) -> None:
         '''Load the contents of the readme file with name filename into the textfield.
            It is checked for different possible encodings 
         '''
@@ -221,13 +221,13 @@ class MainWindow():
         self.textfield.edit_modified(False)
 
     # Context menu event handlers
-    def show_context_menu(self, event):
+    def show_context_menu(self, event) -> None:
         try:
             self.context_menu.tk_popup(event.x_root, event.y_root)
         finally:
             self.context_menu.grab_release()
 
-    def open_in_explorer(self):
+    def open_in_explorer(self) -> None:
         selected_index = self.listbox.curselection()
         if selected_index:
             selected_filename = self.filenames.array[selected_index]
