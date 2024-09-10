@@ -1,3 +1,4 @@
+import locale
 from bioview.charset_detector import CharsetDetector
 
 
@@ -12,5 +13,11 @@ def read_file_contents(filename):
     if not encod:
         return "Error: Unable to decode file."
     else:
-        with open(filename, 'r', encoding=encod) as file:
-            return file.read()
+        try:
+            with open(filename, 'r', encoding=encod) as file:
+                return file.read()
+        except UnicodeDecodeError:
+            print(f'File "{filename}" is not utf-8 encoded. Defaulting to system locale.')
+            encod = locale.getencoding()
+            with open(filename, 'r', encoding=encod) as file:
+                return file.read()
