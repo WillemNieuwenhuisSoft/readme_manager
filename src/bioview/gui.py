@@ -204,13 +204,6 @@ class MainWindow():
         for filename in self.filenames:
             self.listbox.insert(tk.END, pretty_print_name(filename, 50))
 
-    # def load_text_data(self, file_path: str) -> None:
-    #     '''Load the list of readme files from a text file
-    #     '''
-    #     self.filenames = load_list_from_text(file_path)
-
-    #     self.populate_listbox()
-
     def onListboxSelect(self, _):
         selected_index = self.listbox.curselection()
         if selected_index:
