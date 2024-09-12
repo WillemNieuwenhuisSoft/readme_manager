@@ -2,7 +2,7 @@ import logging
 
 logging.basicConfig(
     filename='readme_manager.log',
-    filemode='w',
+    filemode='a',
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
