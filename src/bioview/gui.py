@@ -89,7 +89,7 @@ class MainWindow():
         main_paned_window.add(right_frame, weight=1)
 
         # Add widgets to the frames
-        self.listbox = tk.Listbox(left_frame)
+        self.listbox = tk.Listbox(left_frame, selectmode=tk.EXTENDED)
 
         # Create scrollbars for the listbox
         self.scrollbar_list = tk.Scrollbar(left_frame, orient="vertical")
@@ -144,6 +144,8 @@ class MainWindow():
         self.context_menu = tk.Menu(self.listbox, tearoff=0)
         self.context_menu.add_command(
             label="Open in Explorer", command=self.open_in_explorer)
+        self.context_menu.add_command(
+            label="Save selected items", command=self.save_selection, state=tk.DISABLED)
 
         # Bind right-click to show context menu
         self.listbox.bind("<Button-3>", self.show_context_menu)
@@ -205,9 +207,14 @@ class MainWindow():
             self.listbox.insert(tk.END, pretty_print_name(filename, 50))
 
     def onListboxSelect(self, _) -> None:
-        selected_index = self.listbox.curselection()
-        if selected_index:
-            self.current_filename = Path(self.filenames.array[selected_index])
+        selection = self.listbox.curselection()
+        if not selection:
+            return
+
+        if len(selection) > 1:
+            pass    # do nothing for multiple selections for now
+        else:
+            self.current_filename = Path(self.filenames.array[selection])
             self.filename_label.config(text=self.current_filename)
             self.loadReadmeFile(self.current_filename)
 
@@ -222,6 +229,12 @@ class MainWindow():
 
     # Context menu event handlers
     def show_context_menu(self, event) -> None:
+        selected_items = self.listbox.curselection()
+        if len(selected_items) > 1:
+            self.context_menu.entryconfig("Save selected items", state=tk.NORMAL)
+        else:
+            self.context_menu.entryconfig("Save selected items", state=tk.DISABLED)
+
         try:
             self.context_menu.tk_popup(event.x_root, event.y_root)
         finally:
@@ -234,6 +247,19 @@ class MainWindow():
             selected_filename = selected_filename.replace('/', '\\')
             cmd = f'explorer /select,"{selected_filename}"'
             subprocess.Popen(cmd)
+
+    # Callback for "save selection..."
+    def save_selection(self):
+        selected_items = self.listbox.curselection()
+        # Implement the logic to save the selected items
+        # print(f"Saving selected items: {selected_items}")
+        file_path = filedialog.asksaveasfilename(
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        if file_path:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                for index in selected_items:
+                    file.write(self.filenames.array[index] + '\n')
 
 
 def main():
