@@ -8,6 +8,9 @@ from pathlib import Path
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_excel, load_list_from_text
 from bioview.save_readme_changes import save_readme_changes
+from bioview.scan_readmefiles import rescan_readme_files
+
+ROOT_FOLDER = Path(r'E:\Projects\BioSpace\Data archiving (Pure, Dans)\testfolder')
 
 
 def pretty_print(path: str, max_length: int) -> Path:
@@ -68,9 +71,11 @@ class MainWindow():
         self.top.option_add('*tearOff', False)
         self.menubar = tk.Menu(self.top)
         self.fileMenu = tk.Menu(self.menubar)
-        self.fileMenu.add_command(label='Open', command=self.open_file)
+        # self.fileMenu.add_command(label='Open', command=self.open_file)
         self.fileMenu.add_command(label='Open filename listfile',
                                   command=self.open_text_file)
+        self.fileMenu.add_command(label='Rescan for readme files',
+                                  command=self.rescan_readme_files)
         self.fileMenu.add_separator()
         self.fileMenu.add_command(label='Exit', command=self.onExit)
         self.menubar.add_cascade(menu=self.fileMenu, label='File')
@@ -169,8 +174,18 @@ class MainWindow():
             self.filenames = load_list_from_text(Path(file_path))
             self.populate_listbox()
 
+    def rescan_readme_files(self) -> None:
+        # rescan for readme files
+        # refresh the list of filenames
+        # and repopulate the listbox
+        rescan_readme_files(
+            ROOT_FOLDER, ROOT_FOLDER / Path('all_readme_files.txt'))
+        self.filenames = load_list_from_text(ROOT_FOLDER / Path('all_readme_files.txt'))
+        self.populate_listbox()
+
     # Textfield event handlers
     # --------------------------
+
     def modified_flag_changed(self, event) -> None:
         if self.textfield.edit_modified():
             self.save_changes_button.config(state=tk.NORMAL)
