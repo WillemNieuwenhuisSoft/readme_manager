@@ -158,13 +158,6 @@ class MainWindow():
 
     # File menu event handlers
     # --------------------------
-    def open_file(self) -> None:
-        file_path = filedialog.askopenfilename(
-            filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")]
-        )
-        if file_path:
-            self.filenames = load_list_from_excel(Path(file_path))
-            self.populate_listbox()
 
     def open_text_file(self) -> None:
         file_path = filedialog.askopenfilename(
