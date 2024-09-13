@@ -223,8 +223,14 @@ class MainWindow():
             pass    # do nothing for multiple selections for now
         else:
             self.current_filename = Path(self.filenames.array[selection])
-            self.filename_label.config(text=self.current_filename)
-            self.loadReadmeFile(self.current_filename)
+            if self.current_filename.exists():
+                self.filename_label.config(text=self.current_filename)
+                self.loadReadmeFile(self.current_filename)
+            else:
+                self.filename_label.config(text=f'Could not find "{
+                                           self.current_filename}"')
+                self.textfield.delete('1.0', tk.END)
+                self.textfield.edit_modified(False)
 
     def loadReadmeFile(self, filename: Path) -> None:
         '''Load the contents of the readme file with name filename into the textfield.
