@@ -5,7 +5,8 @@ from typing import List
 def rescan_readme_files(folder: Path, output_file: Path, silent: bool = True) -> None:
     """
     Recursively scan for filenames that contain 'readme' and have a '.txt' extension
-    starting at the folder passed as a parameter.
+    starting at the folder passed as a parameter. The resulting list of files is
+    written to disk.
 
     :param folder: The root folder to start scanning from.
     :param output_file: The file to write the list of readme files to.
