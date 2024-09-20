@@ -2,6 +2,9 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.package-data]
+'animations' = ["*.gif"]
+
 [project]
 name = "bioview"
 version = "1.0.0"
