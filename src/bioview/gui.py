@@ -158,12 +158,16 @@ class MainWindow():
         # Add a button to toggle textfield wrap option
         self.toggle_wrap_button = tk.Button(
             self.button_bar, text="Wrapping: Off", command=self.toggle_wrap)
+        self.toggle_edit_button = tk.Button(
+            self.button_bar, text="Enable Edit", command=self.toggle_edit_event)
         self.save_changes_button = tk.Button(
             self.button_bar, text="Save Changes", command=self.save_changes_event)
         self.toggle_wrap_button.pack(side="left")
+        self.toggle_edit_button.pack(side="left")
         self.save_changes_button.pack(side="left")
 
-        self.textfield = tk.Text(right_frame, wrap=NONE, undo=True, autoseparators=True)
+        self.textfield = tk.Text(right_frame, wrap=NONE, undo=True,
+                                 autoseparators=True, state='disabled')
         self.textfield.bind("<<Modified>>", self.modified_flag_changed)
         self.textfield.bind("<Control-s>", self.save_changes_event)
 
@@ -254,6 +258,15 @@ class MainWindow():
         self.textfield.edit_modified(False)
         return "break"  # Prevent the default behavior
 
+    def toggle_edit_event(self) -> None:
+        '''Toggle the state of the textfield between read-only and editable
+        '''
+        current_state = self.textfield.cget("state")
+        new_state = "normal" if current_state == "disabled" else "disabled"
+        self.textfield.config(state=new_state)
+        self.toggle_edit_button.config(
+            text="Enable Edit" if new_state == "disabled" else "Disable Edit")
+
     # Listbox event handlers
     # ------------------------
 
@@ -286,9 +299,12 @@ class MainWindow():
            It is checked for different possible encodings 
         '''
         file_contents = read_file_contents(filename)
+        current_state = self.textfield.cget("state")
+        self.textfield.configure(state='normal')
         self.textfield.delete('1.0', tk.END)
         self.textfield.insert(tk.END, file_contents)
         self.textfield.edit_modified(False)
+        self.textfield.configure(state=current_state)
 
     # Context menu event handlers
     def show_context_menu(self, event) -> None:
