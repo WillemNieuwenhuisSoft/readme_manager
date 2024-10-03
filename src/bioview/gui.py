@@ -5,12 +5,14 @@ from tkinter import filedialog
 from tkinter import WORD, CHAR, NONE
 import subprocess
 from pathlib import Path
+from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_excel, load_list_from_text
 from bioview.save_readme_changes import save_readme_changes
 from bioview.scan_readmefiles import rescan_readme_files
 
-ROOT_FOLDER = Path(r'E:\Projects\BioSpace\Data archiving (Pure, Dans)\testfolder')
+config = Config(WorkFolder=Path(r'P:\ITC\Projects2\BioSpace'))
+ROOT_FOLDER = config.WorkFolder
 
 
 def pretty_print(path: str, max_length: int) -> Path:
