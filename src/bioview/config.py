@@ -35,25 +35,3 @@ class Config:
         self.MRU.insert(0, path)
         self.MRU = self.MRU[:5]  # Keep only the 5 most recent entries
         self.save()
-
-# Example usage
-
-
-# def main():
-#     config = Config(WorkFolder=Path.home())
-#     print(f"Initial WorkFolder: {config.WorkFolder}")
-#     print(f"Initial MRU: {config.MRU}")
-
-#     # Simulate changing the work folder
-#     new_work_folder = Path(__file__).parent / 'new' / 'work' / 'folder'
-#     config.set_work_folder(new_work_folder)
-#     print(f"Updated WorkFolder: {config.WorkFolder}")
-
-#     # Simulate adding paths to MRU
-#     config.add_to_mru(Path('/path/to/recent/file1'))
-#     config.add_to_mru(Path('/path/to/recent/file2'))
-#     print(f"Updated MRU: {config.MRU}")
-
-
-# if __name__ == '__main__':
-#     main()
