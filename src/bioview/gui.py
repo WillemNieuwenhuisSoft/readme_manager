@@ -13,8 +13,10 @@ from bioview.save_readme_changes import save_readme_changes
 from bioview.scan_readmefiles import rescan_readme_files
 from bioview.progress_window import ProgressPopup
 
-config = Config(WorkFolder=Path(r'P:\ITC\Projects2\BioSpace'))
-ROOT_FOLDER = config.WorkFolder
+config = Config(WorkFolder=Path.home())
+LIST_FILE = Path('all_readme_files.lst')
+
+mw = None
 
 
 def pretty_print(path: str, max_length: int) -> Path:
@@ -53,6 +55,24 @@ def pretty_print_name(path: str, max_length: int) -> Path:
     return Path(pretty)
 
 
+def switch_to_folder(new_folder: Path = None) -> None:
+    global mw
+    curfol = config.WorkFolder
+    if new_folder is None:
+        new_folder = filedialog.askdirectory(initialdir=curfol)
+    if new_folder:
+        mw.project_folder_label.config(text=new_folder)
+        config.add_to_mru(curfol)
+        config.set_work_folder(Path(new_folder))
+        if (new_folder / LIST_FILE).exists():
+            mw.filenames = load_list_from_text(new_folder / LIST_FILE)
+            mw.populate_listbox()
+            # clear edit window
+            mw.filename_label.config(text="")
+            mw.textfield.delete('1.0', tk.END)
+            mw.textfield.edit_modified(False)
+
+
 class MainWindow():
 
     current_filename: Path = None
@@ -75,11 +95,18 @@ class MainWindow():
         self.top.option_add('*tearOff', False)
         self.menubar = tk.Menu(self.top)
         self.fileMenu = tk.Menu(self.menubar)
-        # self.fileMenu.add_command(label='Open', command=self.open_file)
+
+        self.fileMenu.add_command(label='Switch to folder',
+                                  command=switch_to_folder)
         self.fileMenu.add_command(label='Open filename listfile',
                                   command=self.open_text_file)
         self.fileMenu.add_command(label='Rescan for readme files',
                                   command=self.rescan_readme_files)
+        self.fileMenu.add_separator()
+        # Add "Recent" submenu
+        self.recent_menu = tk.Menu(self.fileMenu, tearoff=0)
+        self.fileMenu.add_cascade(label="Recent", menu=self.recent_menu)
+        self.update_recent_menu()
         self.fileMenu.add_separator()
         self.fileMenu.add_command(label='Exit', command=self.onExit)
         self.menubar.add_cascade(menu=self.fileMenu, label='File')
@@ -98,6 +125,11 @@ class MainWindow():
         main_paned_window.add(right_frame, weight=1)
 
         # Add widgets to the frames
+        # Create a label for the project folder
+        self.project_folder_label = tk.Label(
+            left_frame, text="", fg='white', background='red', justify='left')
+        self.project_folder_label.pack(side="top", fill="x")
+
         self.listbox = tk.Listbox(left_frame, selectmode=tk.EXTENDED)
 
         # Create scrollbars for the listbox
@@ -163,9 +195,17 @@ class MainWindow():
     # File menu event handlers
     # --------------------------
 
+    def update_recent_menu(self):
+        self.recent_menu.delete(0, tk.END)
+        for folder in config.MRU:
+            if folder == Path('.'):
+                continue
+            self.recent_menu.add_command(
+                label=str(folder), command=lambda f=folder: switch_to_folder(f))
+
     def open_text_file(self) -> None:
         file_path = filedialog.askopenfilename(
-            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+            filetypes=[("List files", "*.lst"), ("All files", "*.*")]
         )
         if file_path:
             self.filenames = load_list_from_text(Path(file_path))
@@ -184,7 +224,7 @@ class MainWindow():
         while t.is_alive():
             pass
         progress.stop_animation()
-        self.filenames = load_list_from_text(ROOT_FOLDER / Path('all_readme_files.txt'))
+        self.filenames = load_list_from_text(config.WorkFolder / LIST_FILE)
         self.populate_listbox()
 
     # Textfield event handlers
@@ -287,10 +327,11 @@ class MainWindow():
 
 def rescan():
     rescan_readme_files(
-        ROOT_FOLDER, ROOT_FOLDER / Path('all_readme_files.txt'))
+        config.WorkFolder, config.WorkFolder / LIST_FILE)
 
 
 def main():
+    global mw
     mw = MainWindow()
     mw.build_gui()
     mw.top.mainloop()
