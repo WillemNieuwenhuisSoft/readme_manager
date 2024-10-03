@@ -219,16 +219,14 @@ class MainWindow():
         if not selection:
             return
 
-        if len(selection) > 1:
-            pass    # do nothing for multiple selections for now
-        else:
+        if len(selection) == 1:
             self.current_filename = Path(self.filenames.array[selection])
             if self.current_filename.exists():
                 self.filename_label.config(text=self.current_filename)
                 self.loadReadmeFile(self.current_filename)
             else:
-                self.filename_label.config(text=f'Could not find "{
-                                           self.current_filename}"')
+                self.filename_label.config(text=f'''Could not find "{
+                                           self.current_filename}"''')
                 self.textfield.delete('1.0', tk.END)
                 self.textfield.edit_modified(False)
 
