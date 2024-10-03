@@ -3,13 +3,15 @@ from tkinter.constants import BOTH
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import WORD, CHAR, NONE
+import threading
 import subprocess
 from pathlib import Path
 from bioview.config import Config
 from bioview.load_readme import read_file_contents
-from bioview.load_readme_list import load_list_from_excel, load_list_from_text
+from bioview.load_readme_list import load_list_from_text
 from bioview.save_readme_changes import save_readme_changes
 from bioview.scan_readmefiles import rescan_readme_files
+from bioview.progress_window import ProgressPopup
 
 config = Config(WorkFolder=Path(r'P:\ITC\Projects2\BioSpace'))
 ROOT_FOLDER = config.WorkFolder
@@ -170,11 +172,18 @@ class MainWindow():
             self.populate_listbox()
 
     def rescan_readme_files(self) -> None:
+        progress = ProgressPopup(self.top)
+        progress.update_text("Scanning for readme files. This can take some time")
+        progress.start_animation()
         # rescan for readme files
         # refresh the list of filenames
         # and repopulate the listbox
-        rescan_readme_files(
-            ROOT_FOLDER, ROOT_FOLDER / Path('all_readme_files.txt'))
+        t = threading.Thread(target=rescan)
+        t.start()
+
+        while t.is_alive():
+            pass
+        progress.stop_animation()
         self.filenames = load_list_from_text(ROOT_FOLDER / Path('all_readme_files.txt'))
         self.populate_listbox()
 
@@ -274,6 +283,11 @@ class MainWindow():
             with open(file_path, 'w', encoding='utf-8') as file:
                 for index in selected_items:
                     file.write(self.filenames.array[index] + '\n')
+
+
+def rescan():
+    rescan_readme_files(
+        ROOT_FOLDER, ROOT_FOLDER / Path('all_readme_files.txt'))
 
 
 def main():
