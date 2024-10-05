@@ -242,6 +242,11 @@ class MainWindow():
 
     # Textfield event handlers
     # --------------------------
+    def clear_editor(self):
+        # clear edit window
+        self.filename_label.config(text="")
+        self.textfield.delete('1.0', tk.END)
+        self.textfield.edit_modified(False)
 
     def modified_flag_changed(self, event) -> None:
         if self.textfield.edit_modified():
@@ -298,10 +303,9 @@ class MainWindow():
                 self.filename_label.config(text=self.current_filename)
                 self.loadReadmeFile(self.current_filename)
             else:
+                self.clear_editor()
                 self.filename_label.config(text=f'''Could not find "{
                                            self.current_filename}"''')
-                self.textfield.delete('1.0', tk.END)
-                self.textfield.edit_modified(False)
 
     def loadReadmeFile(self, filename: Path) -> None:
         '''Load the contents of the readme file with name filename into the textfield.
@@ -309,10 +313,10 @@ class MainWindow():
         '''
         file_contents = read_file_contents(filename)
         current_state = self.textfield.cget("state")
-        self.textfield.configure(state='normal')
-        self.textfield.delete('1.0', tk.END)
+        self.textfield.configure(state='normal')    # allow insert if editor R/O
+        self.clear_editor()
+        self.filename_label.config(text=filename)
         self.textfield.insert(tk.END, file_contents)
-        self.textfield.edit_modified(False)
         self.textfield.configure(state=current_state)
 
     # Context menu event handlers
