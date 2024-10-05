@@ -6,6 +6,7 @@ from tkinter import WORD, CHAR, NONE
 import threading
 import subprocess
 from pathlib import Path
+import pandas as pd
 from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_text
@@ -55,25 +56,7 @@ def pretty_print_name(path: str, max_length: int) -> Path:
     return Path(pretty)
 
 
-def switch_to_folder(new_folder: Path = None) -> None:
-    global mw
-    curfol = config.WorkFolder
-    if new_folder is None:
-        new_folder = filedialog.askdirectory(initialdir=curfol)
-    if new_folder:
-        mw.project_folder_label.config(text=new_folder)
-        config.add_to_mru(curfol)
-        config.set_work_folder(Path(new_folder))
-        if (new_folder / LIST_FILE).exists():
-            mw.filenames = load_list_from_text(new_folder / LIST_FILE)
-            mw.populate_listbox()
-            # clear edit window
-            mw.filename_label.config(text="")
-            mw.textfield.delete('1.0', tk.END)
-            mw.textfield.edit_modified(False)
-
-
-class MainWindow():
+class MainWindow:
 
     current_filename: Path = None
 
@@ -97,7 +80,7 @@ class MainWindow():
         self.fileMenu = tk.Menu(self.menubar)
 
         self.fileMenu.add_command(label='Switch to folder',
-                                  command=switch_to_folder)
+                                  command=lambda f=None, window=self: switch_to_folder(window, f))
         self.fileMenu.add_command(label='Open filename listfile',
                                   command=self.open_text_file)
         self.fileMenu.add_command(label='Rescan for readme files',
@@ -214,7 +197,7 @@ class MainWindow():
             if folder == Path('.'):
                 continue
             self.recent_menu.add_command(
-                label=str(folder), command=lambda f=folder: switch_to_folder(f))
+                label=str(folder), command=lambda f=folder, window=self: switch_to_folder(window, f))
 
     def open_text_file(self) -> None:
         file_path = filedialog.askopenfilename(
@@ -360,10 +343,27 @@ def rescan():
         config.WorkFolder, config.WorkFolder / LIST_FILE)
 
 
+def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
+    curfol = config.WorkFolder
+    if new_folder is None:
+        new_folder = filedialog.askdirectory(initialdir=curfol)
+    if new_folder:
+        mw.project_folder_label.config(text=new_folder)
+        config.add_to_mru(curfol)
+        config.set_work_folder(Path(new_folder))
+        mw.update_recent_menu()
+        if (new_folder / LIST_FILE).exists():
+            filenames = load_list_from_text(new_folder / LIST_FILE)
+            mw.populate_listbox(filenames)
+            mw.clear_editor()
+
+
 def main():
     global mw
     mw = MainWindow()
     mw.build_gui()
+    mw.top.wait_visibility()
+    mw.initialize()
     mw.top.mainloop()
 
 
