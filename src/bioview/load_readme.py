@@ -11,6 +11,9 @@ def read_file_contents(filename: Path) -> str:
        Check for different possible encodings.
     '''
     encod = None
+    if filename.stat().st_size == 0:
+        return ''
+
     with open(filename, 'rb') as file:
         encod = CharsetDetector.get_charset(file)
 
