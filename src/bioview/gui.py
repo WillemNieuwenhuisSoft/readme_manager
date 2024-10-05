@@ -196,6 +196,15 @@ class MainWindow():
         self.listbox.bind("<Button-3>", self.show_context_menu)
         self.listbox.bind('<<ListboxSelect>>', self.onListboxSelect)
 
+    def initialize(self):
+        folder = config.WorkFolder
+        mw.project_folder_label.config(text=folder)
+        mw.update_recent_menu()
+        if (folder / LIST_FILE).exists():
+            filenames = load_list_from_text(folder / LIST_FILE)
+            mw.populate_listbox(filenames)
+            mw.clear_editor()
+
     # File menu event handlers
     # --------------------------
 
