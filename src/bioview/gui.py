@@ -221,8 +221,7 @@ class MainWindow():
             filetypes=[("List files", "*.lst"), ("All files", "*.*")]
         )
         if file_path:
-            self.filenames = load_list_from_text(Path(file_path))
-            self.populate_listbox()
+            self.populate_listbox(load_list_from_text(Path(file_path)))
 
     def rescan_readme_files(self) -> None:
         progress = ProgressPopup(self.top)
@@ -237,8 +236,7 @@ class MainWindow():
         while t.is_alive():
             pass
         progress.stop_animation()
-        self.filenames = load_list_from_text(config.WorkFolder / LIST_FILE)
-        self.populate_listbox()
+        self.populate_listbox(load_list_from_text(config.WorkFolder / LIST_FILE))
 
     # Textfield event handlers
     # --------------------------
@@ -284,7 +282,11 @@ class MainWindow():
     # Listbox event handlers
     # ------------------------
 
-    def populate_listbox(self) -> None:
+    def populate_listbox(self, filenames: list[Path]) -> None:
+        if filenames is None:
+            return
+
+        self.filenames = filenames
         # Clear the listbox first
         self.listbox.delete(0, tk.END)
 
@@ -300,7 +302,6 @@ class MainWindow():
         if len(selection) == 1:
             self.current_filename = Path(self.filenames.array[selection])
             if self.current_filename.exists():
-                self.filename_label.config(text=self.current_filename)
                 self.loadReadmeFile(self.current_filename)
             else:
                 self.clear_editor()
