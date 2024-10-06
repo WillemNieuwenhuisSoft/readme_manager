@@ -320,7 +320,7 @@ class MainWindow:
         selected_index = self.listbox.curselection()
         if selected_index:
             selected_filename = self.filenames.array[selected_index]
-            selected_filename = selected_filename.replace('/', '\\')
+            selected_filename = selected_filename.replace('/', '\\')  # windows specific
             cmd = f'explorer /select,"{selected_filename}"'
             subprocess.Popen(cmd)
 
