@@ -68,16 +68,7 @@ class MainWindow:
     def __init__(self):
         pass
 
-    def build_gui(self):
-        self.top = tk.Tk()
-
-        self.top.title('BioSpace')
-        self.top.geometry("1200x700")
-
-        self.top.grid_columnconfigure(0, weight=1)
-        self.top.grid_rowconfigure(0, weight=1)
-
-        self.top.option_add('*tearOff', False)
+    def build_menu(self):
         self.menubar = tk.Menu(self.top)
         self.fileMenu = tk.Menu(self.menubar)
 
@@ -85,7 +76,7 @@ class MainWindow:
                                   command=lambda f=None, window=self: switch_to_folder(window, f))
         self.fileMenu.add_command(label='Open filename listfile',
                                   command=self.open_text_file)
-        self.fileMenu.add_command(label='Rescan for readme files',
+        self.fileMenu.add_command(label='Scan for readme files',
                                   command=self.rescan_readme_files)
         self.fileMenu.add_separator()
         # Add "Recent" submenu
@@ -97,20 +88,7 @@ class MainWindow:
         self.menubar.add_cascade(menu=self.fileMenu, label='File')
         self.top['menu'] = self.menubar
 
-        # Create a PanedWindow
-        main_paned_window = ttk.PanedWindow(self.top, orient=tk.HORIZONTAL)
-        main_paned_window.pack(expand=True, fill="both")
-
-        # Create left and right frames
-        left_frame = ttk.Frame(main_paned_window, width=500)
-        right_frame = ttk.Frame(main_paned_window)
-
-        # Add frames to the PanedWindow
-        main_paned_window.add(left_frame, weight=1)
-        main_paned_window.add(right_frame, weight=1)
-
-        # Add widgets to the frames
-        # Create a label for the project folder
+    def build_left_frame(self, left_frame: tk.Frame):
         self.project_folder_label = tk.Label(
             left_frame, text="", fg='white', background='red', justify='left')
         self.project_folder_label.pack(side="top", fill="x")
@@ -119,7 +97,8 @@ class MainWindow:
 
         # Create scrollbars for the listbox
         self.scrollbar_list = tk.Scrollbar(left_frame, orient="vertical")
-        self.scrollbar_list_horizontal = tk.Scrollbar(left_frame, orient="horizontal")
+        self.scrollbar_list_horizontal = tk.Scrollbar(
+            left_frame, orient="horizontal")
 
         self.scrollbar_list_horizontal.pack(side="bottom", fill="x")
         self.listbox.pack(side="left", fill="both", expand=True)
@@ -131,12 +110,18 @@ class MainWindow:
         self.scrollbar_list.config(command=self.listbox.yview)
         self.scrollbar_list_horizontal.config(command=self.listbox.xview)
 
-        # Create a label for the filename
-        self.filename_label = tk.Label(
-            right_frame, text="", fg='white', background='red', justify='left')
-        self.filename_label.pack(side="top", fill="x")
+        # Create a context menu for the listbox
+        self.context_menu = tk.Menu(self.listbox, tearoff=0)
+        self.context_menu.add_command(
+            label="Open in Explorer", command=self.open_in_explorer)
+        self.context_menu.add_command(
+            label="Save selected items", command=self.save_selection, state=tk.DISABLED)
 
-        # Create a frame for the button bar
+        # Bind right-click to show context menu
+        self.listbox.bind("<Button-3>", self.show_context_menu)
+        self.listbox.bind('<<ListboxSelect>>', self.onListboxSelect)
+
+    def build_edit_button_bar(self, right_frame: tk.Frame):
         self.button_bar = tk.Frame(right_frame)
         self.button_bar.pack(side="top", fill="x")
 
@@ -146,10 +131,19 @@ class MainWindow:
         self.toggle_edit_button = tk.Button(
             self.button_bar, text="Enable Edit", command=self.toggle_edit_event)
         self.save_changes_button = tk.Button(
-            self.button_bar, text="Save Changes", command=self.save_changes_event)
+            self.button_bar, text="Save Changes", command=self.save_changes_event, state=tk.DISABLED)
         self.toggle_wrap_button.pack(side="left")
         self.toggle_edit_button.pack(side="left")
         self.save_changes_button.pack(side="left")
+
+    def build_right_frame(self, right_frame: tk.Frame):
+        # Create a label for the filename
+        self.filename_label = tk.Label(
+            right_frame, text="", fg='white', background='red', justify='left')
+        self.filename_label.pack(side="top", fill="x")
+
+        # Create a frame for the button bar
+        self.build_edit_button_bar(right_frame)
 
         self.textfield = tk.Text(right_frame, wrap=NONE, undo=True,
                                  autoseparators=True, state='disabled')
@@ -163,23 +157,41 @@ class MainWindow:
         self.textfield.pack(side="left", fill="both", expand=True)
         self.scrollbar_text.pack(side="right", fill="y")
 
-        # Configure the yextfield to use the scrollbar
+        # Configure the textfield to use the scrollbar
         self.textfield.config(yscrollcommand=self.scrollbar_text.set,
                               xscrollcommand=self.scrollbar_text_hor.set)
 
         self.scrollbar_text.config(command=self.textfield.yview)
         self.scrollbar_text_hor.config(command=self.textfield.xview)
 
-        # Create a context menu for the listbox
-        self.context_menu = tk.Menu(self.listbox, tearoff=0)
-        self.context_menu.add_command(
-            label="Open in Explorer", command=self.open_in_explorer)
-        self.context_menu.add_command(
-            label="Save selected items", command=self.save_selection, state=tk.DISABLED)
+    def build_gui(self):
+        self.top = tk.Tk()
 
-        # Bind right-click to show context menu
-        self.listbox.bind("<Button-3>", self.show_context_menu)
-        self.listbox.bind('<<ListboxSelect>>', self.onListboxSelect)
+        self.top.title('BioSpace')
+        self.top.geometry("1200x700")
+
+        self.top.grid_columnconfigure(0, weight=1)
+        self.top.grid_rowconfigure(0, weight=1)
+
+        self.top.option_add('*tearOff', False)
+
+        self.build_menu()
+
+        # Create a PanedWindow
+        main_paned_window = ttk.PanedWindow(self.top, orient=tk.HORIZONTAL)
+        main_paned_window.pack(expand=True, fill="both")
+
+        # Create left and right frames
+        left_frame = ttk.Frame(main_paned_window, width=500)
+        right_frame = ttk.Frame(main_paned_window)
+
+        # Add frames to the PanedWindow
+        main_paned_window.add(left_frame, weight=1)
+        main_paned_window.add(right_frame, weight=1)
+
+        self.build_left_frame(left_frame)
+
+        self.build_right_frame(right_frame)
 
     def initialize(self):
         folder = config.WorkFolder
