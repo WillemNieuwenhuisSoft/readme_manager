@@ -305,6 +305,7 @@ class MainWindow:
         self.filename_label.config(text=filename)
         self.textfield.insert(tk.END, file_contents)
         self.textfield.configure(state=current_state)
+        self.textfield.edit_modified(False)
 
     # Context menu event handlers
     def show_context_menu(self, event) -> None:
