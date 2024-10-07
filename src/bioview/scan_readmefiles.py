@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 
 
-def rescan_readme_files(folder: Path, output_file: Path, silent: bool = True) -> None:
+def scan_readme_files(folder: Path, output_file: Path, silent: bool = True) -> None:
     """
     Recursively scan for filenames that contain 'readme' and have a '.txt' extension
     starting at the folder passed as a parameter. The resulting list of files is

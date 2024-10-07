@@ -11,7 +11,7 @@ from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_text
 from bioview.save_readme_changes import save_readme_changes
-from bioview.scan_readmefiles import rescan_readme_files
+from bioview.scan_readmefiles import scan_readme_files
 from bioview.progress_window import ProgressPopup
 
 config = Config(WorkFolder=Path.home())
