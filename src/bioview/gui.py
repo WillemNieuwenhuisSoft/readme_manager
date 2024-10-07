@@ -13,6 +13,7 @@ from bioview.load_readme_list import load_list_from_text
 from bioview.save_readme_changes import save_readme_changes
 from bioview.scan_readmefiles import scan_readme_files
 from bioview.progress_window import ProgressPopup
+from bioview.calback_thread import CallbackThread
 
 config = Config(WorkFolder=Path.home())
 LIST_FILE = Path('all_readme_files.lst')
@@ -59,6 +60,7 @@ def pretty_print_name(path: str, max_length: int) -> Path:
 class MainWindow:
 
     current_filename: Path = None
+    progress = None
 
     def onExit(self):
         exit()
@@ -206,23 +208,24 @@ class MainWindow:
         if file_path:
             self.populate_listbox(load_list_from_text(Path(file_path)))
 
-    def rescan_readme_files(self) -> None:
-        progress = ProgressPopup(self.top)
-        progress.update_text("Scanning for readme files. This can take some time")
-        progress.start_animation()
-        # rescan for readme files
-        # refresh the list of filenames
-        # and repopulate the listbox
-        t = threading.Thread(target=rescan)
-        t.start()
-
-        while t.is_alive():
-            pass
-        progress.stop_animation()
+    def reload_readme_list(self) -> None:
+        self.progress.stop_animation()
         self.populate_listbox(load_list_from_text(config.WorkFolder / LIST_FILE))
+
+    def rescan_readme_files(self) -> None:
+        self.progress = ProgressPopup(self.top)
+        self.progress.update_text("Scanning for readme files. This can take some time")
+        self.progress.start_animation()
+
+        # rescan for readme files
+        t = CallbackThread(target=scan_readme_files,
+                           args=(config.WorkFolder, config.WorkFolder / LIST_FILE),
+                           callback=self.reload_readme_list)
+        t.start()
 
     # Textfield event handlers
     # --------------------------
+
     def clear_editor(self):
         # clear edit window
         self.filename_label.config(text="")
@@ -336,11 +339,6 @@ class MainWindow:
             with open(file_path, 'w', encoding='utf-8') as file:
                 for index in selected_items:
                     file.write(self.filenames.array[index] + '\n')
-
-
-def rescan():
-    rescan_readme_files(
-        config.WorkFolder, config.WorkFolder / LIST_FILE)
 
 
 def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
