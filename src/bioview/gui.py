@@ -91,20 +91,19 @@ class MainWindow:
     def build_left_frame(self, parent_frame: tk.Frame):
         self.project_folder_label = tk.Label(
             parent_frame, text="", fg='white', background='red', justify='left')
-        self.project_folder_label.grid(row=0, column=0, sticky='ew')
+        self.project_folder_label.pack(fill='x')
 
-        frame = ttk.Frame(parent_frame)
-        frame.grid(row=1, column=0, sticky='nsew')
+        paned_window = ttk.PanedWindow(parent_frame, orient=tk.VERTICAL)
+        paned_window.pack(fill='both', expand=True)
+        top_frame = tk.Frame(paned_window)
+        top_frame.pack(fill='both', expand=True)
+        bottom_frame = tk.Frame(paned_window)
+        bottom_frame.pack(fill='both', expand=True)
 
-        self.listbox = tk.Listbox(frame, selectmode=tk.EXTENDED)
-        self.listbox.grid(row=0, column=0, sticky='nsew')
+        self.listbox = tk.Listbox(top_frame, selectmode=tk.EXTENDED)
 
-        # Create scrollbars for the listbox
-        self.scrollbar_list = tk.Scrollbar(frame, orient="vertical")
-        self.scrollbar_list.grid(row=0, column=1, sticky='ns')
-
-        self.scrollbar_list_horizontal = tk.Scrollbar(frame, orient="horizontal")
-        self.scrollbar_list_horizontal.grid(row=1, column=0, sticky='ew')
+        self.scrollbar_list = tk.Scrollbar(top_frame, orient="vertical")
+        self.scrollbar_list_horizontal = tk.Scrollbar(top_frame, orient="horizontal")
 
         # Configure the listbox to use scrollbars
         self.listbox.config(yscrollcommand=self.scrollbar_list.set,
@@ -112,14 +111,10 @@ class MainWindow:
         self.scrollbar_list.config(command=self.listbox.yview)
         self.scrollbar_list_horizontal.config(command=self.listbox.xview)
 
-        # Create the treeview
-        self.treeview = ttk.Treeview(frame)
-        self.treeview.grid(row=2, column=0, columnspan=2, sticky='nsew')
+        self.treeview = ttk.Treeview(bottom_frame)
 
-        # Configure the frame to expand with the window
-        frame.grid_rowconfigure(0, weight=1)
-        frame.grid_rowconfigure(2, weight=1)
-        frame.grid_columnconfigure(0, weight=1)
+        paned_window.add(top_frame, weight=1)
+        paned_window.add(bottom_frame, weight=1)
 
         # Create a context menu for the listbox
         self.context_menu = tk.Menu(self.listbox, tearoff=0)
@@ -131,6 +126,13 @@ class MainWindow:
         # Bind right-click to show context menu
         self.listbox.bind("<Button-3>", self.show_context_menu)
         self.listbox.bind('<<ListboxSelect>>', self.onListboxSelect)
+
+        # setup the layout
+        self.project_folder_label.pack(side="top", fill="x")
+        self.scrollbar_list.pack(side="right", fill="y")
+        self.listbox.pack(side="top", fill="both", expand=True)
+        self.scrollbar_list_horizontal.pack(side="bottom", fill="x")
+        self.treeview.pack(side="bottom", fill="both", expand=True)
 
     def build_edit_button_bar(self, right_frame: tk.Frame):
         self.button_bar = tk.Frame(right_frame)
@@ -192,17 +194,24 @@ class MainWindow:
         main_paned_window = ttk.PanedWindow(self.top, orient=tk.HORIZONTAL)
         main_paned_window.grid(row=0, column=0, sticky='nsew')
 
-        # Create left and right frames
         left_frame = ttk.Frame(main_paned_window, width=500)
+        left_frame.grid(row=0, column=0, sticky='new')
         right_frame = ttk.Frame(main_paned_window)
+        right_frame.grid(row=0, column=1, sticky='new')
+
+        self.build_left_frame(left_frame)
+
+        self.build_right_frame(right_frame)
 
         # Add frames to the PanedWindow
         main_paned_window.add(left_frame, weight=1)
         main_paned_window.add(right_frame, weight=1)
 
-        self.build_left_frame(left_frame)
-
-        self.build_right_frame(right_frame)
+        # Configure the frames to expand with the window
+        left_frame.grid_rowconfigure(0, weight=1)
+        left_frame.grid_columnconfigure(0, weight=1)
+        right_frame.grid_rowconfigure(0, weight=1)
+        right_frame.grid_columnconfigure(0, weight=1)
 
     def initialize(self):
         folder = config.WorkFolder
