@@ -88,27 +88,38 @@ class MainWindow:
         self.menubar.add_cascade(menu=self.fileMenu, label='File')
         self.top['menu'] = self.menubar
 
-    def build_left_frame(self, left_frame: tk.Frame):
+    def build_left_frame(self, parent_frame: tk.Frame):
         self.project_folder_label = tk.Label(
-            left_frame, text="", fg='white', background='red', justify='left')
-        self.project_folder_label.pack(side="top", fill="x")
+            parent_frame, text="", fg='white', background='red', justify='left')
+        self.project_folder_label.grid(row=0, column=0, sticky='ew')
 
-        self.listbox = tk.Listbox(left_frame, selectmode=tk.EXTENDED)
+        frame = ttk.Frame(parent_frame)
+        frame.grid(row=1, column=0, sticky='nsew')
+
+        self.listbox = tk.Listbox(frame, selectmode=tk.EXTENDED)
+        self.listbox.grid(row=0, column=0, sticky='nsew')
 
         # Create scrollbars for the listbox
-        self.scrollbar_list = tk.Scrollbar(left_frame, orient="vertical")
-        self.scrollbar_list_horizontal = tk.Scrollbar(
-            left_frame, orient="horizontal")
+        self.scrollbar_list = tk.Scrollbar(frame, orient="vertical")
+        self.scrollbar_list.grid(row=0, column=1, sticky='ns')
 
-        self.scrollbar_list_horizontal.pack(side="bottom", fill="x")
-        self.listbox.pack(side="left", fill="both", expand=True)
-        self.scrollbar_list.pack(side="right", fill="y")
+        self.scrollbar_list_horizontal = tk.Scrollbar(frame, orient="horizontal")
+        self.scrollbar_list_horizontal.grid(row=1, column=0, sticky='ew')
 
         # Configure the listbox to use scrollbars
         self.listbox.config(yscrollcommand=self.scrollbar_list.set,
                             xscrollcommand=self.scrollbar_list_horizontal.set)
         self.scrollbar_list.config(command=self.listbox.yview)
         self.scrollbar_list_horizontal.config(command=self.listbox.xview)
+
+        # Create the treeview
+        self.treeview = ttk.Treeview(frame)
+        self.treeview.grid(row=2, column=0, columnspan=2, sticky='nsew')
+
+        # Configure the frame to expand with the window
+        frame.grid_rowconfigure(0, weight=1)
+        frame.grid_rowconfigure(2, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
 
         # Create a context menu for the listbox
         self.context_menu = tk.Menu(self.listbox, tearoff=0)
@@ -179,7 +190,7 @@ class MainWindow:
 
         # Create a PanedWindow
         main_paned_window = ttk.PanedWindow(self.top, orient=tk.HORIZONTAL)
-        main_paned_window.pack(expand=True, fill="both")
+        main_paned_window.grid(row=0, column=0, sticky='nsew')
 
         # Create left and right frames
         left_frame = ttk.Frame(main_paned_window, width=500)
