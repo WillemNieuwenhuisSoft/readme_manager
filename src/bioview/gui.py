@@ -18,8 +18,6 @@ from bioview.calback_thread import CallbackThread
 config = Config(WorkFolder=Path.home())
 LIST_FILE = Path('all_readme_files.lst')
 
-mw = None
-
 
 def pretty_print(path: str, max_length: int) -> Path:
     # full folder names
@@ -215,12 +213,12 @@ class MainWindow:
 
     def initialize(self):
         folder = config.WorkFolder
-        mw.project_folder_label.config(text=folder)
-        mw.update_recent_menu()
+        self.project_folder_label.config(text=folder)
+        self.update_recent_menu()
         if (folder / LIST_FILE).exists():
             filenames = load_list_from_text(folder / LIST_FILE)
-            mw.populate_listbox(filenames)
-            mw.clear_editor()
+            self.populate_listbox(filenames)
+            self.clear_editor()
 
     # File menu event handlers
     # --------------------------
@@ -390,7 +388,6 @@ def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
 
 
 def main():
-    global mw
     mw = MainWindow()
     mw.build_gui()
     mw.top.wait_visibility()
