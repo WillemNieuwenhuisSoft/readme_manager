@@ -1,12 +1,13 @@
+from importlib.resources import files
 import tkinter as tk
 from tkinter.constants import BOTH
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import WORD, CHAR, NONE
-import threading
 import subprocess
 from pathlib import Path
 import pandas as pd
+from PIL import ImageTk
 from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_text
@@ -17,6 +18,8 @@ from bioview.calback_thread import CallbackThread
 
 config = Config(WorkFolder=Path.home())
 LIST_FILE = Path('all_readme_files.lst')
+FOLDER_ICON_LOCATION = files('animations').joinpath('folder.ico')
+FILE_ICON_LOCATION = files('animations').joinpath('file.ico')
 
 
 def pretty_print(path: str, max_length: int) -> Path:
@@ -59,6 +62,8 @@ class MainWindow:
 
     current_filename: Path = None
     progress = None
+    folder_icon = None
+    file_icon = None
 
     def onExit(self):
         exit()
@@ -219,6 +224,11 @@ class MainWindow:
             filenames = load_list_from_text(folder / LIST_FILE)
             self.populate_listbox(filenames)
             self.clear_editor()
+
+        if config.WorkFolder.exists():
+            self.folder_icon = ImageTk.PhotoImage(file=FOLDER_ICON_LOCATION)
+            self.file_icon = ImageTk.PhotoImage(file=FILE_ICON_LOCATION)
+            populate_treeview(self, '', config.WorkFolder)
 
     # File menu event handlers
     # --------------------------
@@ -385,6 +395,34 @@ def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
             filenames = load_list_from_text(new_folder / LIST_FILE)
             mw.populate_listbox(filenames)
             mw.clear_editor()
+            populate_treeview(mw, '', config.WorkFolder)
+
+
+def populate_treeview(window: MainWindow, parent: str, path: Path):
+    # Clear the treeview
+    for item in window.treeview.get_children():
+        window.treeview.delete(item)
+
+    populate_treeview_items(window, parent, path)
+
+
+def populate_treeview_items(window: MainWindow, parent: str, path: Path):
+    """
+    Populate the Treeview with the file structure starting at the given path.
+
+    :param treeview: The Treeview widget to populate.
+    :param parent: The parent item in the Treeview.
+    :param path: The root path to start populating from.
+    """
+    top = window.treeview.winfo_toplevel()
+    for item in path.iterdir():
+        if item.is_dir():
+            item_id = window.treeview.insert(
+                parent, 'end', text=item.name, image=window.folder_icon, open=False)
+            populate_treeview_items(window, item_id, item)
+        else:
+            item_id = window.treeview.insert(
+                parent, 'end', text=item.name, image=window.file_icon, open=False)
 
 
 def main():
