@@ -15,6 +15,7 @@ from bioview.save_readme_changes import save_readme_changes
 from bioview.scan_readmefiles import scan_readme_files
 from bioview.progress_window import ProgressPopup
 from bioview.calback_thread import CallbackThread
+from bioview.dirtree import DirTree
 
 config = Config(WorkFolder=Path.home())
 LIST_FILE = Path('all_readme_files.lst')
@@ -114,7 +115,8 @@ class MainWindow:
         self.scrollbar_list.config(command=self.listbox.yview)
         self.scrollbar_list_horizontal.config(command=self.listbox.xview)
 
-        self.treeview = ttk.Treeview(bottom_frame)
+        # self.treeview = ttk.Treeview(bottom_frame, show='tree')
+        self.dirtree = DirTree(bottom_frame, root_path=config.WorkFolder)
 
         paned_window.add(top_frame, weight=1)
         paned_window.add(bottom_frame, weight=1)
@@ -135,7 +137,7 @@ class MainWindow:
         self.scrollbar_list.pack(side="right", fill="y")
         self.listbox.pack(side="top", fill="both", expand=True)
         self.scrollbar_list_horizontal.pack(side="bottom", fill="x")
-        self.treeview.pack(side="bottom", fill="both", expand=True)
+        self.dirtree.pack(side="bottom", fill="both", expand=True)
 
     def build_edit_button_bar(self, right_frame: tk.Frame):
         self.button_bar = tk.Frame(right_frame)
@@ -224,11 +226,6 @@ class MainWindow:
             filenames = load_list_from_text(folder / LIST_FILE)
             self.populate_listbox(filenames)
             self.clear_editor()
-
-        if config.WorkFolder.exists():
-            self.folder_icon = ImageTk.PhotoImage(file=FOLDER_ICON_LOCATION)
-            self.file_icon = ImageTk.PhotoImage(file=FILE_ICON_LOCATION)
-            populate_treeview(self, '', config.WorkFolder)
 
     # File menu event handlers
     # --------------------------
@@ -395,34 +392,7 @@ def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
             filenames = load_list_from_text(new_folder / LIST_FILE)
             mw.populate_listbox(filenames)
             mw.clear_editor()
-            populate_treeview(mw, '', config.WorkFolder)
-
-
-def populate_treeview(window: MainWindow, parent: str, path: Path):
-    # Clear the treeview
-    for item in window.treeview.get_children():
-        window.treeview.delete(item)
-
-    populate_treeview_items(window, parent, path)
-
-
-def populate_treeview_items(window: MainWindow, parent: str, path: Path):
-    """
-    Populate the Treeview with the file structure starting at the given path.
-
-    :param treeview: The Treeview widget to populate.
-    :param parent: The parent item in the Treeview.
-    :param path: The root path to start populating from.
-    """
-    top = window.treeview.winfo_toplevel()
-    for item in path.iterdir():
-        if item.is_dir():
-            item_id = window.treeview.insert(
-                parent, 'end', text=item.name, image=window.folder_icon, open=False)
-            populate_treeview_items(window, item_id, item)
-        else:
-            item_id = window.treeview.insert(
-                parent, 'end', text=item.name, image=window.file_icon, open=False)
+            # TODO: select workfolder in dirtree
 
 
 def main():
