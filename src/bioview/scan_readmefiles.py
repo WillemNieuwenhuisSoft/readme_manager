@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 
 def scan_readme_files(folder: Path, output_file: Path, silent: bool = True) -> None:

@@ -1,13 +1,10 @@
 from importlib.resources import files
 import tkinter as tk
-from tkinter.constants import BOTH
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import WORD, CHAR, NONE
 import subprocess
 from pathlib import Path
-import pandas as pd
-from PIL import ImageTk
 from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_text
