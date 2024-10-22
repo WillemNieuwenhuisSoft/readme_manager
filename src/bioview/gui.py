@@ -144,7 +144,7 @@ class MainWindow:
         self.toggle_wrap_button = tk.Button(
             self.button_bar, text="Wrapping: Off", command=self.toggle_wrap)
         self.toggle_edit_button = tk.Button(
-            self.button_bar, text="Enable Edit", command=self.toggle_edit_event)
+            self.button_bar, text="Edit: Disabled", command=self.toggle_edit_event)
         self.save_changes_button = tk.Button(
             self.button_bar, text="Save Changes", command=self.save_changes_event, state=tk.DISABLED)
         self.toggle_wrap_button.pack(side="left")
@@ -262,9 +262,12 @@ class MainWindow:
 
     def clear_editor(self):
         # clear edit window
+        current_state = self.textfield.cget("state")
+        self.textfield.config(state='normal')    # allow insert if editor R/O
         self.filename_label.config(text="")
         self.textfield.delete('1.0', tk.END)
         self.textfield.edit_modified(False)
+        self.textfield.config(state=current_state)  # restore state
 
     def modified_flag_changed(self, event) -> None:
         if self.textfield.edit_modified():
@@ -297,7 +300,7 @@ class MainWindow:
         new_state = "normal" if current_state == "disabled" else "disabled"
         self.textfield.config(state=new_state)
         self.toggle_edit_button.config(
-            text="Enable Edit" if new_state == "disabled" else "Disable Edit")
+            text="Edit: Disabled" if new_state == "disabled" else "Edit: Enabled")
 
     # Listbox event handlers
     # ------------------------
