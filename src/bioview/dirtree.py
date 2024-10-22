@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date
 from importlib.resources import files
 import logging
 import shutil
@@ -7,14 +7,17 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import ttk, Menu
 from PIL import ImageTk
+from bioview.tree_follower import Tree
+
 
 logger = logging.getLogger(__name__)
 
 
-class DirTree(ttk.Frame):
+class DirTree(ttk.Frame, Tree):
 
     def __init__(self, window: tk.Tk | tk.Toplevel, root_path: Path = None) -> None:
-        super().__init__(window)
+        ttk.Frame.__init__(self, window)
+        Tree.__init__(self)
         # show="tree" removes the column header, since we
         # are not using the table feature.
         self.treeview = ttk.Treeview(self, show="tree")
@@ -112,6 +115,7 @@ class DirTree(ttk.Frame):
             parent, position, text=name, tags=("fstag",),
             image=self.get_icon(path))
         self.fsobjects[iid] = path
+        self.notify("item_added", path)
         return iid
 
     def load_tree(self, path: Path) -> None:
