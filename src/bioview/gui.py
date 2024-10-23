@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from importlib.resources import files
+import logging
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import WORD, CHAR, NONE
 import subprocess
 from pathlib import Path
+import pandas as pd
 from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_text
@@ -20,10 +22,12 @@ LIST_FILE = Path('all_readme_files.lst')
 FOLDER_ICON_LOCATION = files('animations').joinpath('folder.ico')
 FILE_ICON_LOCATION = files('animations').joinpath('file.ico')
 
+logger = logging.getLogger(__name__)
+
 
 class TreeFollowerObserver(ABC):
     @abstractmethod
-    def update(self, event: str, item_id: str):
+    def update(self, event: str, item_id: Path):
         pass
 
 
@@ -232,9 +236,18 @@ class MainWindow(TreeFollowerObserver):
             self.populate_listbox(filenames)
             self.clear_editor()
 
+    # Observer callback
+    def update(self, event: str, item_id: Path):
+        if event == "item_added":
+            new_readme = pd.Series(str(item_id))
+            filenames = pd.concat([new_readme, self.filenames])
+            self.populate_listbox(filenames)
+            self.listbox.selection_set(0)   # select the new readme file
+
+            logger.info(f"{event}: {item_id}")
+
     # File menu event handlers
     # --------------------------
-
     def update_recent_menu(self):
         self.recent_menu.delete(0, tk.END)
         for folder in config.MRU:
@@ -267,7 +280,6 @@ class MainWindow(TreeFollowerObserver):
 
     # Textfield event handlers
     # --------------------------
-
     def clear_editor(self):
         # clear edit window
         current_state = self.textfield.cget("state")
@@ -312,10 +324,7 @@ class MainWindow(TreeFollowerObserver):
 
     # Listbox event handlers
     # ------------------------
-    def update(self, event: str, item_id: str):
-        print(f"TreeFollowerObserver: {event} {item_id}")
-
-    def populate_listbox(self, filenames: list[Path]) -> None:
+    def populate_listbox(self, filenames: pd.Series) -> None:
         if filenames is None:
             return
 
