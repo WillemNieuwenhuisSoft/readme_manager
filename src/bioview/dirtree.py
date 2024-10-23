@@ -115,7 +115,8 @@ class DirTree(ttk.Frame, Tree):
             parent, position, text=name, tags=("fstag",),
             image=self.get_icon(path))
         self.fsobjects[iid] = path
-        self.notify("item_added", path)
+        if not path.exists():
+            self.notify("item_added", path)
         return iid
 
     def load_tree(self, path: Path) -> None:
