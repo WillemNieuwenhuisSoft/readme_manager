@@ -1,5 +1,4 @@
-﻿This <DATASETNAME>_readme.txt file was generated on <YYYYMMDD> by <NAME>
-
+﻿
 -------------------
 GENERAL INFORMATION
 -------------------
