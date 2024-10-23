@@ -1,11 +1,13 @@
 from datetime import date
 from importlib.resources import files
 import logging
+import os
 import shutil
 import sys
 import tkinter as tk
 from pathlib import Path
 from tkinter import ttk, Menu
+from tkinter import filedialog
 from PIL import ImageTk
 from bioview.tree_follower import Tree
 
@@ -62,33 +64,45 @@ class DirTree(ttk.Frame, Tree):
             if selected_path.is_dir():
                 self.context_menu.post(event.x_root, event.y_root)
 
-    def create_readme(self):
+    def create_readme(self) -> Path | bool:
         selected_item = self.treeview.selection()[0]
         selected_path = self.fsobjects[selected_item]
         readme_path = selected_path / "readme.txt"
 
-        if not readme_path.exists():
-            with open(readme_path, 'w') as f:
-                f.write(
-                    f"This <DATASETNAME>_readme.txt file was generated on {date.today().strftime('%Y-%m-%d')} by <NAME>\n\n")
-            self.insert_item("readme.txt", readme_path, selected_item, position=0)
-            logger.info(f"readme.txt created at {readme_path}")
-        else:
-            logger.warning(f"readme.txt already exists at {readme_path}")
+        file = filedialog.asksaveasfile(
+            initialfile=readme_path,
+            defaultextension=".txt",
+            filetypes=[("Readme files", "*.txt"), ("All files", "*.*")]
+        )
+        if not file:
+            return False
+
+        user = os.getlogin()
+        file_path = Path(file.name)
+        file.write(f"This {file_path.name} file was generated on {
+                   date.today().strftime('%Y-%m-%d')} by {user}\n\n")
+        file.close()
+
+        self.insert_item(file_path.name, file_path, selected_item, position=0)
+        logger.info(f"{file_path.name} created at {file_path}")
+
+        return file_path
 
     def create_readme_template(self):
-        selected_item = self.treeview.selection()[0]
-        selected_path = self.fsobjects[selected_item]
-        readme_path = selected_path / "readme.txt"
+        new_file = self.create_readme()
+        if not new_file:
+            return
 
         template = files('animations').joinpath('readme_template.txt')
 
-        if not readme_path.exists():
-            shutil.copyfile(template, readme_path)
-            logger.info(f"Readme template copied to {readme_path}")
-            self.insert_item("readme.txt", readme_path, selected_item, position=0)
-        else:
-            logger.warning(f"readme.txt already exists at {readme_path}")
+        with open(template, 'r') as f:
+            template_content = f.read()
+            with open(new_file, 'a') as new_f:
+                new_f.write(template_content)
+
+            logger.info(f"Readme template copied to {new_file}")
+            selected_item = self.treeview.selection()[0]
+            self.insert_item("readme.txt", new_file, selected_item, position=0)
 
     def safe_iterdir(self, path: Path) -> tuple[Path, ...] | tuple[()]:
         """
@@ -110,13 +124,19 @@ class DirTree(ttk.Frame, Tree):
     def insert_item(self, name: str, path: Path, parent: str = "", position=tk.END) -> str:
         """
         Insert a file or folder into the treeview and return the item ID.
+        If position == 0, it means that the item is added manually by the user
+        In that case a check is made whether the item is already in the tree (this
+        can happen only when trying to create a new readme file that already exists)
         """
+        if position == 0:
+            for child in self.treeview.get_children(parent):
+                if self.fsobjects[child] == path:
+                    return child
+            self.notify("item_added", path)
         iid = self.treeview.insert(
             parent, position, text=name, tags=("fstag",),
             image=self.get_icon(path))
         self.fsobjects[iid] = path
-        if not path.exists():
-            self.notify("item_added", path)
         return iid
 
     def load_tree(self, path: Path) -> None:
