@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from importlib.resources import files
 import tkinter as tk
 from tkinter import ttk
@@ -18,6 +19,12 @@ config = Config(WorkFolder=Path.home())
 LIST_FILE = Path('all_readme_files.lst')
 FOLDER_ICON_LOCATION = files('animations').joinpath('folder.ico')
 FILE_ICON_LOCATION = files('animations').joinpath('file.ico')
+
+
+class TreeFollowerObserver(ABC):
+    @abstractmethod
+    def update(self, event: str, item_id: str):
+        pass
 
 
 def pretty_print(path: str, max_length: int) -> Path:
@@ -56,7 +63,7 @@ def pretty_print_name(path: str, max_length: int) -> Path:
     return Path(pretty)
 
 
-class MainWindow:
+class MainWindow(TreeFollowerObserver):
 
     current_filename: Path = None
     progress = None
@@ -135,6 +142,7 @@ class MainWindow:
         self.listbox.pack(side="top", fill="both", expand=True)
         self.scrollbar_list_horizontal.pack(side="bottom", fill="x")
         self.dirtree.pack(side="bottom", fill="both", expand=True)
+        self.dirtree.attach(self)
 
     def build_edit_button_bar(self, right_frame: tk.Frame):
         self.button_bar = tk.Frame(right_frame)
@@ -304,6 +312,8 @@ class MainWindow:
 
     # Listbox event handlers
     # ------------------------
+    def update(self, event: str, item_id: str):
+        print(f"TreeFollowerObserver: {event} {item_id}")
 
     def populate_listbox(self, filenames: list[Path]) -> None:
         if filenames is None:
