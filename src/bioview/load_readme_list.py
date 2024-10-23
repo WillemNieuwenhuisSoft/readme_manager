@@ -25,7 +25,7 @@ def load_list_from_text(file_path: Path) -> pd.Series:
         file_path (str): The path to the text file.
 
     Returns:
-        series: a list containing the file locations of all readme files.
+        series: a pandas Series containing the file locations of all readme files.
     """
     # Load the text file
     lines = None
