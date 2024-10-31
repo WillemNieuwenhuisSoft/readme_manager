@@ -14,6 +14,9 @@ from bioview.tree_follower import Tree
 
 logger = logging.getLogger(__name__)
 
+INCLUDE_FILES: bool = True
+NO_FILE_LIST: bool = False
+
 
 class DirTree(ttk.Frame, Tree):
 
@@ -27,9 +30,14 @@ class DirTree(ttk.Frame, Tree):
 
         # Create the create-readme context menu
         self.context_menu = Menu(self.treeview, tearoff=0)
-        self.context_menu.add_command(label="Create README", command=self.create_readme)
         self.context_menu.add_command(
-            label="Create README from template", command=self.create_readme_template)
+            label="Create empty README", command=lambda f=NO_FILE_LIST: self.create_readme(f))
+        self.context_menu.add_command(
+            label="Create README with file list", command=lambda f=INCLUDE_FILES: self.create_readme(f))
+        self.context_menu.add_command(
+            label="Create README from template", command=lambda f=NO_FILE_LIST: self.create_readme_template(f))
+        self.context_menu.add_command(
+            label="Create README from template/file list", command=lambda f=INCLUDE_FILES: self.create_readme_template(f))
 
         # Bind right-click to show context menu
         self.treeview.bind("<Button-3>", self.show_context_menu)
@@ -64,7 +72,7 @@ class DirTree(ttk.Frame, Tree):
             if selected_path.is_dir():
                 self.context_menu.post(event.x_root, event.y_root)
 
-    def create_readme(self) -> Path | bool:
+    def create_readme(self, include_file_list: bool = False) -> Path | bool:
         selected_item = self.treeview.selection()[0]
         selected_path = self.fsobjects[selected_item]
         readme_path = selected_path / "readme.txt"
@@ -81,6 +89,10 @@ class DirTree(ttk.Frame, Tree):
         file_path = Path(file.name)
         file.write(f"This {file_path.name} file was generated on {
                    date.today().strftime('%Y-%m-%d')} by {user}\n\n")
+        if include_file_list:
+            files = self.safe_iterdir(file_path.parent)
+            for f in files:
+                file.write(f"{f.name}\n")
         file.close()
 
         self.insert_item(file_path.name, file_path, selected_item, position=0)
@@ -88,17 +100,27 @@ class DirTree(ttk.Frame, Tree):
 
         return file_path
 
-    def create_readme_template(self):
-        new_file = self.create_readme()
+    def create_readme_template(self, include_file_list: bool = False) -> None:
+        # do not add file list yet, it will be added later
+        new_file = self.create_readme(include_file_list=False)
         if not new_file:
             return
 
         template = files('animations').joinpath('readme_template.txt')
 
+        files_in_folder = []
+        if include_file_list:
+            files_in_folder = self.safe_iterdir(new_file.parent)
+
         with open(template, 'r') as f:
-            template_content = f.read()
+            template_content = f.readlines()
             with open(new_file, 'a') as new_f:
-                new_f.write(template_content)
+                for line in template_content:
+                    new_f.write(f"{line}")
+                    if line.lower().startswith('file list'):
+                        for f in files_in_folder:
+                            new_f.write(f"{f.name}\n")
+                        new_f.write("\n")
 
             logger.info(f"Readme template copied to {new_file}")
             selected_item = self.treeview.selection()[0]
