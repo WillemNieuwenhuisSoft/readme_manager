@@ -11,6 +11,7 @@ import pandas as pd
 from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_text
+from bioview.readme_creation import ReadmeCreator
 from bioview.save_readme_changes import save_readme_changes
 from bioview.scan_readmefiles import scan_readme_files
 from bioview.progress_window import ProgressPopup
@@ -123,8 +124,10 @@ class MainWindow(TreeFollowerObserver):
         self.scrollbar_list.config(command=self.listbox.yview)
         self.scrollbar_list_horizontal.config(command=self.listbox.xview)
 
-        # self.treeview = ttk.Treeview(bottom_frame, show='tree')
         self.dirtree = DirTree(bottom_frame, root_path=config.WorkFolder)
+        self.readme_creator = ReadmeCreator(self.dirtree)
+        dir_context_menu = self.readme_creator.create_readme_context_menu()
+        self.dirtree.set_context_menu(dir_context_menu)
 
         paned_window.add(top_frame, weight=1)
         paned_window.add(bottom_frame, weight=1)
