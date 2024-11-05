@@ -114,9 +114,9 @@ class DirTree(ttk.Frame, Tree):
             child = self.insert_item(fsobj.name, fullpath, parent)
             # Preload the content of each directory within `path`.
             # This is necessary to make the folder item expandable.
-            if fullpath.is_dir():
-                for sub_fsobj in self._safe_iterdir(fullpath):
-                    self.insert_item(sub_fsobj.name, fullpath / sub_fsobj, child)
+            # if fullpath.is_dir():
+            #     for sub_fsobj in self._safe_iterdir(fullpath):
+            #         self.insert_item(sub_fsobj.name, fullpath / sub_fsobj, child)
 
     def _load_subitems(self, iid: str) -> None:
         """
