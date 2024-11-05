@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, asdict
+from importlib.resources import files
 import json
 from pathlib import Path
 from typing import List
@@ -10,6 +11,10 @@ CONFIG_FILE = Path.home() / 'bioview.json'
 class Config:
     WorkFolder: Path
     MRU: List[Path] = field(default_factory=lambda: [Path() for _ in range(5)])
+    active_template: Path = files('animations').joinpath('readme_template.txt')
+    all_templates: List[Path] = field(
+        default_factory=lambda: [f for f in files(
+            'animations').iterdir() if f.suffix == '.txt'])
 
     def __post_init__(self):
         self.load()
@@ -18,8 +23,13 @@ class Config:
         if CONFIG_FILE.exists():
             with open(CONFIG_FILE, 'r', encoding='utf-8') as file:
                 data = json.load(file)
-                self.WorkFolder = Path(data['WorkFolder'])
-                self.MRU = [Path(p) for p in data['MRU']]
+                self.WorkFolder = Path(data.get('WorkFolder'))
+                self.MRU = [Path(p) for p in data.get('MRU')]
+                template = data.get('active_template')
+                if template:
+                    self.active_template = Path(template)
+                else:
+                    self.set_active_template(self.all_templates[0])
 
     def save(self):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as file:
@@ -27,6 +37,10 @@ class Config:
 
     def set_work_folder(self, path: Path):
         self.WorkFolder = path
+        self.save()
+
+    def set_active_template(self, path: Path):
+        self.active_template = path
         self.save()
 
     def add_to_mru(self, path: Path):
