@@ -69,7 +69,7 @@ class ReadmeCreator:
             file.write(f"{f.name}\n")
         file.write("\n")
 
-    def write_template(self, file: TextIO, file_list: list[Path]):
+    def copy_from_template(self, file: TextIO, file_list: list[Path]):
         template_name = files('animations').joinpath('readme_template.txt')
         with open(template_name, 'r') as template:
             template_content = template.readlines()
@@ -81,7 +81,7 @@ class ReadmeCreator:
     def create_readme(self, content: ReadmeContent) -> None:
         file_path = self.init_readme_file()
         if not file_path:
-            return False
+            return
 
         file_list = []
         if content in [ReadmeContent.WITH_FILE_LIST, ReadmeContent.TEMPLATE_WITH_FILE_LIST]:
@@ -90,7 +90,7 @@ class ReadmeCreator:
         with open(file_path, 'w') as file:
             self.write_header(file)
             if content in [ReadmeContent.TEMPLATE, ReadmeContent.TEMPLATE_WITH_FILE_LIST]:
-                self.write_template(file, file_list)
+                self.copy_from_template(file, file_list)
             elif content == ReadmeContent.WITH_FILE_LIST:
                 self.write_file_list(file, file_list)
 
