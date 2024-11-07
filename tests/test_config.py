@@ -21,7 +21,6 @@ def test_load_with_existing_config(mock_exists, mock_open, config_data):
         config_data)
 
     config = Config(WorkFolder=Path("/default/workfolder"))
-    config.load()
 
     assert config.WorkFolder == Path(config_data["WorkFolder"])
     assert config.MRU == [Path(p) for p in config_data["MRU"]]
@@ -32,7 +31,6 @@ def test_load_with_existing_config(mock_exists, mock_open, config_data):
 @mock.patch.object(Path, 'exists', return_value=False)
 def test_load_with_no_config(mock_exists, mock_open):
     config = Config(WorkFolder=Path("/default/workfolder"))
-    config.load()
 
     assert config.WorkFolder == Path("/default/workfolder")
     assert config.MRU == [Path() for _ in range(5)]
