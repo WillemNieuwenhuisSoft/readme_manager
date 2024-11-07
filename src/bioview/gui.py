@@ -248,6 +248,8 @@ class MainWindow(TreeFollowerObserver):
             self.listbox.selection_set(0)   # select the new readme file
 
             logger.info(f"{event}: {item_id}")
+        if event == "readme_clicked":
+            self.loadReadmeFile(item_id)
 
     # File menu event handlers
     # --------------------------

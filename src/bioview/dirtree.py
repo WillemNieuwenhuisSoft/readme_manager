@@ -25,6 +25,7 @@ class DirTree(ttk.Frame, Tree):
         # Call the item_opened() method each item an item is expanded.
         self.treeview.tag_bind(
             "fstag", "<<TreeviewOpen>>", self._item_opened)
+        self.treeview.bind("<ButtonRelease-1>", self._view_readme)
 
         # Make sure the treeview widget follows the window when resizing.
         for w in (self, window):
@@ -136,3 +137,11 @@ class DirTree(ttk.Frame, Tree):
         iid = self.treeview.selection()[0]
         # If it is a folder, loads its content.
         self._load_subitems(iid)
+
+    def _view_readme(self, _event: tk.Event) -> None:
+        """
+        Handler invoked when a left-click is made on an item.
+        """
+        selected_path = self.get_selected_path()
+        if selected_path.is_file():
+            self.notify("readme_clicked", selected_path)
