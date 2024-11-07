@@ -8,3 +8,4 @@ dist
 *.java
 
 readme_manager.log
+.coverage
