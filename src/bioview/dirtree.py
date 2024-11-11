@@ -43,7 +43,7 @@ class DirTree(ttk.Frame, Tree):
         # Load the root directory.
         if root_path is None:
             root_path = Path(Path(sys.executable).anchor)
-        self._load_tree(root_path)
+        self.load_tree(root_path)
 
     def set_context_menu(self, context_menu: Menu):
         self.context_menu = context_menu
@@ -101,7 +101,11 @@ class DirTree(ttk.Frame, Tree):
         self.fsobjects[iid] = path
         return iid
 
-    def _load_tree(self, path: Path) -> None:
+    def clear_tree(self) -> None:
+        self.fsobjects.clear()
+        self.treeview.delete(*self.treeview.get_children())
+
+    def load_tree(self, path: Path) -> None:
         # insert top-level item
         iid = self.insert_item(path.name, path)
         self._load_subtree(path, parent=iid)

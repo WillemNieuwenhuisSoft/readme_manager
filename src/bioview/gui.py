@@ -412,11 +412,12 @@ def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
         config.add_to_mru(curfol)
         config.set_work_folder(Path(new_folder))
         mw.update_recent_menu()
+        mw.dirtree.clear_tree()
+        mw.dirtree.load_tree(new_folder)
         if (new_folder / LIST_FILE).exists():
             filenames = load_list_from_text(new_folder / LIST_FILE)
             mw.populate_listbox(filenames)
             mw.clear_editor()
-            # TODO: select workfolder in dirtree
 
 
 def main():
