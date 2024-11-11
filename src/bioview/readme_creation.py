@@ -46,9 +46,10 @@ class ReadmeCreator:
 
     def init_readme_file(self) -> Path | None:
         selected_path = self.dir_tree.get_selected_path()
-        readme_path = selected_path / "readme.txt"
+        readme_file = "readme.txt"
         file = filedialog.asksaveasfile(
-            initialfile=readme_path,
+            initialfile=readme_file,
+            initialdir=selected_path,
             defaultextension=".txt",
             filetypes=[("Readme files", "*.txt"), ("All files", "*.*")]
         )
