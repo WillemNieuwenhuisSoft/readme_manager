@@ -113,7 +113,8 @@ class MainWindow(TreeFollowerObserver):
         bottom_frame = tk.Frame(paned_window)
         bottom_frame.pack(fill='both', expand=True)
 
-        self.listbox = tk.Listbox(top_frame, selectmode=tk.EXTENDED)
+        self.listbox = tk.Listbox(
+            top_frame, selectmode=tk.EXTENDED, exportselection=False)
 
         self.scrollbar_list = tk.Scrollbar(top_frame, orient="vertical")
         self.scrollbar_list_horizontal = tk.Scrollbar(top_frame, orient="horizontal")
@@ -175,7 +176,7 @@ class MainWindow(TreeFollowerObserver):
         # Create a frame for the button bar
         self.build_edit_button_bar(right_frame)
 
-        self.textfield = tk.Text(right_frame, wrap=NONE, undo=True,
+        self.textfield = tk.Text(right_frame, wrap=NONE, undo=True, exportselection=False,
                                  autoseparators=True, state='disabled')
         self.textfield.bind("<<Modified>>", self.modified_flag_changed)
         self.textfield.bind("<Control-s>", self.save_changes_event)
