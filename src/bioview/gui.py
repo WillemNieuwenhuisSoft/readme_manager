@@ -301,6 +301,7 @@ class MainWindow(TreeFollowerObserver):
 
     def modified_flag_changed(self, event) -> None:
         if self.textfield.edit_modified():
+            self.changed_file = self.current_filename
             self.save_changes_button.config(state=tk.NORMAL)
         else:
             self.save_changes_button.config(state=tk.DISABLED)
