@@ -407,11 +407,9 @@ class MainWindow(TreeFollowerObserver):
             cmd = f'explorer /select,"{selected_filename}"'
             subprocess.Popen(cmd)
 
-    # Callback for "save selection..."
     def save_selection(self):
+        '''Save the selected items in the listbox to a text file'''
         selected_items = self.listbox.curselection()
-        # Implement the logic to save the selected items
-        # print(f"Saving selected items: {selected_items}")
         file_path = filedialog.asksaveasfilename(
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
         )
