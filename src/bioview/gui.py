@@ -315,14 +315,21 @@ class MainWindow(TreeFollowerObserver):
         self.textfield.config(wrap=new_wrap)
         self.toggle_wrap_button.config(text=f"Wrapping: {new_wrap_ui.upper()}")
 
-    def save_changes_event(self, event=None) -> str:
-        if not self.textfield.edit_modified:
-            return "break"
+    def focusout_event(self, event) -> None:
+        logger.info("focus_out event")
+        # TODO: optionally ask user to save changes
+        if self.textfield.edit_modified():
+            self.save_changes_event()
 
-        # keep backups and save changes
+    def save_changes_event(self, event=None) -> None:
+        logger.info("Save changes event")
+
+        if not self.current_filename:
+            return
+
         save_readme_changes(self.current_filename, self.textfield.get('1.0', tk.END))
         self.textfield.edit_modified(False)
-        return "break"  # Prevent the default behavior
+        return
 
     def toggle_edit_event(self) -> None:
         '''Toggle the state of the textfield between read-only and editable
