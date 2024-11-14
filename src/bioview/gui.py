@@ -354,7 +354,12 @@ class MainWindow(TreeFollowerObserver):
         for filename in self.filenames:
             self.listbox.insert(tk.END, pretty_print_name(filename, 50))
 
-    def onListboxSelect(self, _) -> None:
+    def onListboxSelect(self, event) -> None:
+        self.top.after_idle(self.handle_listbox_select)
+
+    def handle_listbox_select(self) -> None:
+        logger.info("Listbox selection processed")
+
         selection = self.listbox.curselection()
         if not selection:
             return
