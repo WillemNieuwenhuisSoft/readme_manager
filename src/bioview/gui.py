@@ -140,10 +140,6 @@ class MainWindow(TreeFollowerObserver):
         self.context_menu.add_command(
             label="Save selected items", command=self.save_selection, state=tk.DISABLED)
 
-        # Bind right-click to show context menu
-        self.listbox.bind("<Button-3>", self.show_context_menu)
-        self.listbox.bind('<<ListboxSelect>>', self.onListboxSelect)
-
         # setup the layout
         self.project_folder_label.pack(side="top", fill="x")
         self.scrollbar_list.pack(side="right", fill="y")
@@ -178,8 +174,6 @@ class MainWindow(TreeFollowerObserver):
 
         self.textfield = tk.Text(right_frame, wrap=NONE, undo=True, exportselection=False,
                                  autoseparators=True, state='disabled')
-        self.textfield.bind("<<Modified>>", self.modified_flag_changed)
-        self.textfield.bind("<Control-s>", self.save_changes_event)
 
         # Create scrollbars for the textfield
         self.scrollbar_text = tk.Scrollbar(right_frame, orient="vertical")
@@ -194,6 +188,14 @@ class MainWindow(TreeFollowerObserver):
 
         self.scrollbar_text.config(command=self.textfield.yview)
         self.scrollbar_text_hor.config(command=self.textfield.xview)
+
+    def bind_all_events(self):
+        self.textfield.bind("<<Modified>>", self.modified_flag_changed)
+        self.textfield.bind("<Control-s>", self.save_changes_event)
+        self.textfield.bind("<FocusOut>", self.focusout_event)
+        # Bind right-click to show context menu
+        self.listbox.bind("<Button-3>", self.show_context_menu)
+        self.listbox.bind('<<ListboxSelect>>', self.onListboxSelect)
 
     def build_gui(self):
         self.top = tk.Tk()
@@ -230,6 +232,8 @@ class MainWindow(TreeFollowerObserver):
         left_frame.grid_columnconfigure(0, weight=1)
         right_frame.grid_rowconfigure(0, weight=1)
         right_frame.grid_columnconfigure(0, weight=1)
+
+        self.bind_all_events()
 
     def initialize(self):
         folder = config.WorkFolder
