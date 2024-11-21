@@ -10,7 +10,7 @@ def config_data():
     return {
         "WorkFolder": str(Path("/path/to/workfolder")),
         "MRU": [str(Path(f"/path/to/recent{i}")) for i in range(5)],
-        "active_template": str(Path("/path/to/active_template.txt"))
+        "active_template": (Path("/path/to/active_template.txt")).name
     }
 
 
@@ -24,7 +24,7 @@ def test_load_with_existing_config(mock_exists, mock_open, config_data):
 
     assert config.WorkFolder == Path(config_data["WorkFolder"])
     assert config.MRU == [Path(p) for p in config_data["MRU"]]
-    assert config.active_template == Path(config_data["active_template"])
+    assert config.active_template.name == config_data["active_template"]
 
 
 @mock.patch('builtins.open')
