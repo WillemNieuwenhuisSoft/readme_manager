@@ -31,6 +31,7 @@ class Config:
 
     def save(self):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as file:
+            self.active_template = Path(self.active_template).name   # strip the path
             json.dump(asdict(self), file, indent=4, default=str)
 
     def set_work_folder(self, path: Path):
