@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from tkinter import Menu, filedialog
 from typing import TextIO
+from bioview.config import Config
 from bioview.dirtree import DirTree
 
 
@@ -17,6 +18,7 @@ class ReadmeContent(Enum):
 
 
 logger = logging.getLogger(__name__)
+config = Config(WorkFolder=Path.home())
 
 
 class ReadmeCreator:
@@ -71,7 +73,7 @@ class ReadmeCreator:
         file.write("\n")
 
     def copy_from_template(self, file: TextIO, file_list: list[Path]):
-        template_name = files('animations').joinpath('readme_template.txt')
+        template_name = files('animations').joinpath(config.active_template)
         with open(template_name, 'r') as template:
             template_content = template.readlines()
             for line in template_content:
