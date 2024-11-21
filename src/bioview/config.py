@@ -11,7 +11,7 @@ CONFIG_FILE = Path.home() / 'bioview.json'
 class Config:
     WorkFolder: Path
     MRU: List[Path] = field(default_factory=lambda: [Path() for _ in range(5)])
-    active_template: Path = 'readme_template.txt'
+    active_template: str = 'readme_template.txt'
     all_templates: List[str] = field(
         default_factory=lambda: [f.name for f in files(
             'animations').iterdir() if f.suffix == '.txt'])
@@ -25,10 +25,8 @@ class Config:
                 data = json.load(file)
                 self.WorkFolder = Path(data.get('WorkFolder'))
                 self.MRU = [Path(p) for p in data.get('MRU')]
-                template = data.get('active_template')
-                if template:
-                    self.active_template = files('animations').joinpath(template)
-                else:
+                self.active_template = data.get('active_template')
+                if not self.active_template:
                     self.set_active_template(self.all_templates[0])
 
     def save(self):
@@ -39,8 +37,8 @@ class Config:
         self.WorkFolder = path
         self.save()
 
-    def set_active_template(self, path: Path):
-        self.active_template = path.name
+    def set_active_template(self, template: str):
+        self.active_template = Path(template).name  # strip the path
         self.save()
 
     def add_to_mru(self, path: Path):

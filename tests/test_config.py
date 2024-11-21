@@ -24,7 +24,7 @@ def test_load_with_existing_config(mock_exists, mock_open, config_data):
 
     assert config.WorkFolder == Path(config_data["WorkFolder"])
     assert config.MRU == [Path(p) for p in config_data["MRU"]]
-    assert config.active_template.name == config_data["active_template"]
+    assert config.active_template == config_data["active_template"]
 
 
 @mock.patch('builtins.open')
