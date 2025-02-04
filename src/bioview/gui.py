@@ -426,8 +426,9 @@ def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
         new_folder = filedialog.askdirectory(initialdir=curfol)
     if new_folder:
         mw.project_folder_label.config(text=new_folder)
+        new_folder = Path(new_folder)
         config.add_to_mru(curfol)
-        config.set_work_folder(Path(new_folder))
+        config.set_work_folder(new_folder)
         mw.update_recent_menu()
         mw.dirtree.clear_tree()
         mw.dirtree.load_tree(new_folder)
