@@ -74,6 +74,7 @@ class MainWindow(TreeFollowerObserver):
     progress = None
     folder_icon = None
     file_icon = None
+    filenames = None
 
     def onExit(self):
         exit()
