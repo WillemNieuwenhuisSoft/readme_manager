@@ -8,6 +8,7 @@ from tkinter import WORD, CHAR, NONE
 import subprocess
 from pathlib import Path
 import pandas as pd
+from PIL import Image, ImageTk
 from bioview.config import Config
 from bioview.load_readme import read_file_contents
 from bioview.load_readme_list import load_list_from_text
@@ -17,11 +18,17 @@ from bioview.scan_readmefiles import scan_readme_files
 from bioview.progress_window import ProgressPopup
 from bioview.calback_thread import CallbackThread
 from bioview.dirtree import DirTree
+from bioview.tooltip import Tooltip
 
 config = Config(WorkFolder=Path.home())
 LIST_FILE = Path('all_readme_files.lst')
 FOLDER_ICON_LOCATION = files('animations').joinpath('folder.ico')
 FILE_ICON_LOCATION = files('animations').joinpath('file.ico')
+WRAP_ENABLED = files('animations').joinpath('wrap-text.png')
+WRAP_DISABLED = files('animations').joinpath('wrap-text-grey.png')
+READONLY = files('animations').joinpath('edit-grey.png')
+READWRITE = files('animations').joinpath('edit.png')
+SAVE_CHANGES = files('animations').joinpath('diskette.png')
 
 logger = logging.getLogger(__name__)
 
@@ -153,16 +160,35 @@ class MainWindow(TreeFollowerObserver):
         self.button_bar = tk.Frame(right_frame)
         self.button_bar.pack(side="top", fill="x")
 
+        # Load images
+        wrap_on_image = Image.open(WRAP_ENABLED).resize((32, 32), Image.Resampling.LANCZOS)
+        wrap_off_image = Image.open(WRAP_DISABLED).resize((32, 32), Image.Resampling.LANCZOS)
+        edit_image = Image.open(READWRITE).resize((32, 32), Image.Resampling.LANCZOS)
+        no_edit_image = Image.open(READONLY).resize((32, 32), Image.Resampling.LANCZOS)
+        save_image = Image.open(SAVE_CHANGES).resize((32, 32), Image.Resampling.LANCZOS)
+
+        self.wrap_on_image = ImageTk.PhotoImage(wrap_on_image)
+        self.wrap_off_image = ImageTk.PhotoImage(wrap_off_image)
+        self.edit_image = ImageTk.PhotoImage(edit_image)
+        self.no_edit_image = ImageTk.PhotoImage(no_edit_image)
+        self.save_image = ImageTk.PhotoImage(save_image)
+
         # Add a button to toggle textfield wrap option
-        self.toggle_wrap_button = tk.Button(
-            self.button_bar, text="Wrapping: Off", command=self.toggle_wrap)
-        self.toggle_edit_button = tk.Button(
-            self.button_bar, text="Edit: Disabled", command=self.toggle_edit_event)
+        self.wrap_button = tk.Button(
+            self.button_bar, image=self.wrap_off_image, command=self.toggle_wrap)
+        self.edit_button = tk.Button(
+            self.button_bar, image=self.no_edit_image, command=self.toggle_edit_event)
         self.save_changes_button = tk.Button(
-            self.button_bar, text="Save Changes", command=self.save_changes_event, state=tk.DISABLED)
-        self.toggle_wrap_button.pack(side="left")
-        self.toggle_edit_button.pack(side="left")
+            self.button_bar, image=self.save_image, command=self.save_changes_event, state=tk.DISABLED)
+
+        self.wrap_button.pack(side="left")
+        self.edit_button.pack(side="left")
         self.save_changes_button.pack(side="left")
+
+        # Add tooltips to buttons
+        self.wrap_tooltip = Tooltip(self.wrap_button, "Wrapping: Off")
+        self.edit_tooltip = Tooltip(self.edit_button, "Edit: Disabled")
+        Tooltip(self.save_changes_button, "Save changes")
 
     def build_right_frame(self, right_frame: tk.Frame):
         # Create a label for the filename
@@ -314,7 +340,10 @@ class MainWindow(TreeFollowerObserver):
         new_wrap = NONE if current_wrap == WORD else WORD
         new_wrap_ui = "Off" if current_wrap == WORD else "On"
         self.textfield.config(wrap=new_wrap)
-        self.toggle_wrap_button.config(text=f"Wrapping: {new_wrap_ui.upper()}")
+        new_status = tk.DISABLED if current_wrap == WORD else tk.NORMAL
+        self.wrap_button.config(image=self.wrap_on_image if new_status ==
+                                tk.NORMAL else self.wrap_off_image)
+        self.wrap_tooltip.set_text(text=f"Wrapping: {new_wrap_ui}")
 
     def focusout_event(self, event) -> None:
         logger.info("focus_out event")
@@ -338,8 +367,10 @@ class MainWindow(TreeFollowerObserver):
         current_state = self.textfield.cget("state")
         new_state = "normal" if current_state == "disabled" else "disabled"
         self.textfield.config(state=new_state)
-        self.toggle_edit_button.config(
-            text="Edit: Disabled" if new_state == "disabled" else "Edit: Enabled")
+        self.edit_button.config(image=self.edit_image if new_state ==
+                                "normal" else self.no_edit_image)
+        self.edit_tooltip.set_text(text="Edit: Disabled" if new_state ==
+                                   "disabled" else "Edit: Enabled")
 
     # Listbox event handlers
     # ------------------------
