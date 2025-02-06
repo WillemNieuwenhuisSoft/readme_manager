@@ -409,6 +409,7 @@ class MainWindow(TreeFollowerObserver):
         '''Load the contents of the readme file with name filename into the textfield.
            It is checked for different possible encodings 
         '''
+        self.current_filename = filename
         file_contents = read_file_contents(filename)
         current_state = self.textfield.cget("state")
         self.textfield.configure(state='normal')    # allow insert if editor R/O
