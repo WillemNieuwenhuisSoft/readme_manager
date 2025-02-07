@@ -41,6 +41,9 @@ This app present a GUI allowing to find, view and edit `readme` text files in a 
 ```
 
 Image attribution:
-<a href="https://www.flaticon.com/free-icons/wrap-text" title="wrap text icons">Wrap text icons created by Radhe Icon - Flaticon</a>
-<a href="https://www.flaticon.com/free-icons/readonly" title="readonly icons">Readonly icons created by meaicon - Flaticon</a>
-<a href="https://www.flaticon.com/free-icons/save" title="save icons">Save icons created by Yogi Aprelliyanto - Flaticon</a>
+<img src="src/animations/wrap-text.png" width=20/>
+<a href="https://www.flaticon.com/free-icons/wrap-text" title="wrap text icons">Wrap text icons created by Radhe Icon - Flaticon</a><br>
+<img src="src/animations/edit.png" width=20/>
+<a href="https://www.flaticon.com/free-icons/readonly" title="readonly icons">Readonly icons created by meaicon - Flaticon</a><br>
+<img src="src/animations/diskette.png" width=20/>
+<a href="https://www.flaticon.com/free-icons/save" title="save icons">Save icons created by Yogi Aprelliyanto - Flaticon</a><br>
