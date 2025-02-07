@@ -71,9 +71,12 @@ class DirTree(ttk.Frame, Tree):
         Like `Path.iterdir()`, but do not stop on permission errors.
         """
         try:
-            return tuple(path.iterdir())
+            if path.exists():
+                return tuple(path.iterdir())
+            logger.warning(f"Could not locate folder: {path}")
+            return ()
         except PermissionError:
-            logger.error("You don't have permission to read", path)
+            logger.error(f"You don't have permission to read {path}")
             return ()
 
     def _get_icon(self, path: Path) -> tk.PhotoImage:
@@ -114,6 +117,10 @@ class DirTree(ttk.Frame, Tree):
         """
         Load the contents of `path` into the treeview.
         """
+        if not path.exists():
+            logger.warning(f"Could not locate folder: {path}")
+            return
+
         for fsobj in self._safe_iterdir(path):
             fullpath = path / fsobj
             child = self.insert_item(fsobj.name, fullpath, parent)
