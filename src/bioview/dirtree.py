@@ -66,6 +66,39 @@ class DirTree(ttk.Frame, Tree):
         selected_item = self.treeview.selection()[0]
         return self.fsobjects[selected_item]
 
+    def get_item_id(self, path: Path) -> str:
+        """Get the Treeview item ID corresponding to the given path."""
+        for k, v in self.fsobjects.items():
+            if v == path:
+                return k
+        return ''
+
+    def highlight_filenames(self, folder: Path, filenames: list[str]) -> None:
+        """Highlight or select all names in the open Treeview branch where the current file is located."""
+        if folder is None:
+            return
+
+        folder_id = self.get_item_id(folder)
+        if not folder_id:
+            return
+
+        self.treeview.item(folder_id, open=True)
+
+        # Highlight or select matching items
+        for child_id in self.treeview.get_children(folder_id):
+            item_text = self.treeview.item(child_id, 'text')
+            if item_text in filenames:
+                self.treeview.selection_add(child_id)
+                self.treeview.item(child_id, tags='highlight')
+
+        # Configure the highlight tag
+        self.treeview.tag_configure('highlight', background='red', foreground='black')
+
+    def clear_selection(self) -> None:
+        """Deselect all items in the Treeview."""
+        for item in self.treeview.selection():
+            self.treeview.selection_remove(item)
+
     def _safe_iterdir(self, path: Path) -> tuple[Path, ...] | tuple[()]:
         """
         Like `Path.iterdir()`, but do not stop on permission errors.
