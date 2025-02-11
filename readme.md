@@ -47,3 +47,7 @@ Image attribution:
 <a href="https://www.flaticon.com/free-icons/readonly" title="readonly icons">Readonly icons created by meaicon - Flaticon</a><br>
 <img src="src/animations/diskette.png" width=20/>
 <a href="https://www.flaticon.com/free-icons/save" title="save icons">Save icons created by Yogi Aprelliyanto - Flaticon</a><br>
+<img src="src/animations/search.png" width=20/>
+<a href="https://www.flaticon.com/free-icons/search" title="search icons">Search icons created by Royyan Wijaya - Flaticon</a><br>
+<img src="src/animations/highlighter.png" width=20/>
+<a href="https://www.flaticon.com/free-icons/highlighter" title="highlighter icons">Highlighter icons created by Md Tanvirul Haque - Flaticon</a><br>
