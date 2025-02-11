@@ -29,6 +29,8 @@ WRAP_DISABLED = files('animations').joinpath('wrap-text-grey.png')
 READONLY = files('animations').joinpath('edit-grey.png')
 READWRITE = files('animations').joinpath('edit.png')
 SAVE_CHANGES = files('animations').joinpath('diskette.png')
+SEARCH_TEXT = files('animations').joinpath('search.png')
+MARK_FILES = files('animations').joinpath('highlighter.png')
 
 logger = logging.getLogger(__name__)
 
@@ -166,12 +168,16 @@ class MainWindow(TreeFollowerObserver):
         edit_image = Image.open(READWRITE).resize((32, 32), Image.Resampling.LANCZOS)
         no_edit_image = Image.open(READONLY).resize((32, 32), Image.Resampling.LANCZOS)
         save_image = Image.open(SAVE_CHANGES).resize((32, 32), Image.Resampling.LANCZOS)
+        search_image = Image.open(SEARCH_TEXT).resize((32, 32), Image.Resampling.LANCZOS)
+        mark_image = Image.open(MARK_FILES).resize((32, 32), Image.Resampling.LANCZOS)
 
         self.wrap_on_image = ImageTk.PhotoImage(wrap_on_image)
         self.wrap_off_image = ImageTk.PhotoImage(wrap_off_image)
         self.edit_image = ImageTk.PhotoImage(edit_image)
         self.no_edit_image = ImageTk.PhotoImage(no_edit_image)
         self.save_image = ImageTk.PhotoImage(save_image)
+        self.search_image = ImageTk.PhotoImage(search_image)
+        self.mark_image = ImageTk.PhotoImage(mark_image)
 
         # Add a button to toggle textfield wrap option
         self.wrap_button = tk.Button(
@@ -180,15 +186,22 @@ class MainWindow(TreeFollowerObserver):
             self.button_bar, image=self.no_edit_image, command=self.toggle_edit_event)
         self.save_changes_button = tk.Button(
             self.button_bar, image=self.save_image, command=self.save_changes_event, state=tk.DISABLED)
+        search_button = tk.Button(
+            self.button_bar, image=self.search_image, command=self.perform_search)
+        mark_button = tk.Button(
+            self.button_bar, image=self.mark_image, command=self.mark_filenames)
 
         self.wrap_button.pack(side="left")
         self.edit_button.pack(side="left")
         self.save_changes_button.pack(side="left")
+        search_button.pack(side="left")
+        mark_button.pack(side="left")
 
         # Add tooltips to buttons
         self.wrap_tooltip = Tooltip(self.wrap_button, "Wrapping: Off")
         self.edit_tooltip = Tooltip(self.edit_button, "Edit: Disabled")
         Tooltip(self.save_changes_button, "Save changes")
+        Tooltip(search_button, "Search")
 
     def build_right_frame(self, right_frame: tk.Frame):
         # Create a label for the filename
@@ -372,8 +385,59 @@ class MainWindow(TreeFollowerObserver):
         self.edit_tooltip.set_text(text="Edit: Disabled" if new_state ==
                                    "disabled" else "Edit: Enabled")
 
+    def perform_search(self):
+        # search_term = self.search_entry.get()
+        search_term = ['locations', 'pipo', 'raster']
+        self.search_text(search_term)
+
+    def search_text(self, search_terms: list[str]) -> None:
+        """Search for the given term in the textfield and highlight matches."""
+        self.textfield.tag_remove("search", "1.0", tk.END)  # Remove previous search highlights
+
+        if not search_terms:
+            return
+
+        for term in search_terms:
+            start_pos = "1.0"
+            while True:
+                start_pos = self.textfield.search(term, start_pos, stopindex=tk.END)
+                if not start_pos:
+                    break
+                end_pos = f"{start_pos}+{len(term)}c"
+                self.textfield.tag_add("search", start_pos, end_pos)
+                start_pos = end_pos
+
+        self.textfield.tag_configure("search", background="yellow", foreground="black")
+
+    def mark_filenames(self):
+        '''Highlight files in the text: only those filenames that are in the same folder
+           as the currently displayed textfile.
+           Also mark these files in the treeview.
+        '''
+        if self.current_filename is None:
+            return
+
+        found_files = []
+        path = self.current_filename.parent
+        self.textfield.tag_remove("mark", "1.0", tk.END)
+        for filename in path.iterdir():
+            start_pos = "1.0"
+            while True:
+                start_pos = self.textfield.search(filename.name, start_pos, stopindex=tk.END)
+                if not start_pos:
+                    break
+                found_files.append(filename.name)
+                end_pos = f"{start_pos}+{len(filename.name)}c"
+                self.textfield.tag_add("mark", start_pos, end_pos)
+                start_pos = end_pos
+
+        self.textfield.tag_configure("mark", background="lightblue", foreground="black")
+
+        self.dirtree.highlight_filenames(path, found_files)
+
     # Listbox event handlers
     # ------------------------
+
     def populate_listbox(self, filenames: pd.Series) -> None:
         if filenames is None:
             return
@@ -452,6 +516,8 @@ class MainWindow(TreeFollowerObserver):
                     file.write(self.filenames.array[index] + '\n')
 
 
+# file menu event handlers
+# ------------------------
 def switch_to_folder(mw: MainWindow, new_folder: Path = None) -> None:
     curfol = config.WorkFolder
     if new_folder is None:
