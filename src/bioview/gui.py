@@ -146,15 +146,15 @@ class MainWindow(TreeFollowerObserver):
 
         # Add a button to toggle textfield wrap option
         self.wrap_button = tk.Button(
-            self.button_bar, image=self.wrap_off_image, command=self.toggle_wrap)
+            self.button_bar, image=self.wrap_off_image, command=self._toggle_wrap)
         self.edit_button = tk.Button(
-            self.button_bar, image=self.no_edit_image, command=self.toggle_edit_event)
+            self.button_bar, image=self.no_edit_image, command=self._toggle_edit_event)
         self.save_changes_button = tk.Button(
-            self.button_bar, image=self.save_image, command=self.save_changes_event, state=tk.DISABLED)
+            self.button_bar, image=self.save_image, command=self._save_changes_event, state=tk.DISABLED)
         search_button = tk.Button(
-            self.button_bar, image=self.search_image, command=self.perform_search)
+            self.button_bar, image=self.search_image, command=self._perform_search)
         mark_button = tk.Button(
-            self.button_bar, image=self.mark_image, command=self.mark_filenames)
+            self.button_bar, image=self.mark_image, command=self._mark_filenames)
 
         self.wrap_button.pack(side="left")
         self.edit_button.pack(side="left")
@@ -195,12 +195,12 @@ class MainWindow(TreeFollowerObserver):
         self.scrollbar_text_hor.config(command=self.textfield.xview)
 
     def bind_all_events(self):
-        self.textfield.bind("<<Modified>>", self.modified_flag_changed)
-        self.textfield.bind("<Control-s>", self.save_changes_event)
-        self.textfield.bind("<FocusOut>", self.focusout_event)
+        self.textfield.bind("<<Modified>>", self._modified_flag_changed)
+        self.textfield.bind("<Control-s>", self._save_changes_event)
+        self.textfield.bind("<FocusOut>", self._focusout_event)
         # Bind right-click to show context menu
-        self.listbox.bind("<Button-3>", self.show_context_menu)
-        self.listbox.bind('<<ListboxSelect>>', self.onListboxSelect)
+        self.listbox.bind("<Button-3>", self._show_context_menu)
+        self.listbox.bind('<<ListboxSelect>>', self._onListboxSelect)
 
     def build_gui(self):
         self.top = tk.Tk()
@@ -241,6 +241,7 @@ class MainWindow(TreeFollowerObserver):
         self.bind_all_events()
 
     def initialize(self):
+        '''Now that the GUI is built, populate GUI entries from the configuration file'''
         folder = config.WorkFolder
         self.project_folder_label.config(text=folder)
         self.update_recent_menu()
@@ -304,32 +305,37 @@ class MainWindow(TreeFollowerObserver):
         self.textfield.edit_modified(False)
         self.textfield.config(state=current_state)  # restore state
 
-    def modified_flag_changed(self, event) -> None:
+    def _modified_flag_changed(self, event) -> None:
         if self.textfield.edit_modified():
             self.changed_file = self.current_filename
             self.save_changes_button.config(state=tk.NORMAL)
         else:
             self.save_changes_button.config(state=tk.DISABLED)
 
-    def toggle_wrap(self) -> None:
+    def _toggle_wrap(self) -> None:
         '''Toggle the wrap option of the textfield
+           Update the state of the wrap button and the tooltip
         '''
+        # update the wrap option in the textfield
         current_wrap = self.textfield.cget("wrap")
         new_wrap = NONE if current_wrap == WORD else WORD
-        new_wrap_ui = "Off" if current_wrap == WORD else "On"
         self.textfield.config(wrap=new_wrap)
+
+        # Update the wrap button image
         new_status = tk.DISABLED if current_wrap == WORD else tk.NORMAL
         self.wrap_button.config(image=self.wrap_on_image if new_status ==
                                 tk.NORMAL else self.wrap_off_image)
+        # Update tooltip text
+        new_wrap_ui = "Off" if current_wrap == WORD else "On"
         self.wrap_tooltip.set_text(text=f"Wrapping: {new_wrap_ui}")
 
-    def focusout_event(self, event) -> None:
+    def _focusout_event(self, event) -> None:
         logger.info("focus_out event")
         # TODO: optionally ask user to save changes
         if self.textfield.edit_modified():
-            self.save_changes_event()
+            self._save_changes_event()
 
-    def save_changes_event(self, event=None) -> None:
+    def _save_changes_event(self, event=None) -> None:
         logger.info("Save changes event")
 
         if not self.current_filename:
@@ -339,18 +345,24 @@ class MainWindow(TreeFollowerObserver):
         self.textfield.edit_modified(False)
         return
 
-    def toggle_edit_event(self) -> None:
+    def _toggle_edit_event(self) -> None:
         '''Toggle the state of the textfield between read-only and editable
+            Update the tooltip and the image of the edit button
         '''
+        # set edit state of the textfield
         current_state = self.textfield.cget("state")
         new_state = "normal" if current_state == "disabled" else "disabled"
         self.textfield.config(state=new_state)
+
+        # Update the edit button image
         self.edit_button.config(image=self.edit_image if new_state ==
                                 "normal" else self.no_edit_image)
+        # Update tooltip text
         self.edit_tooltip.set_text(text="Edit: Disabled" if new_state ==
                                    "disabled" else "Edit: Enabled")
 
-    def perform_search(self):
+    def _perform_search(self):
+        # TODO: implement search
         # search_term = self.search_entry.get()
         search_term = ['locations', 'pipo', 'raster']
         self.search_text(search_term)
@@ -374,7 +386,7 @@ class MainWindow(TreeFollowerObserver):
 
         self.textfield.tag_configure("search", background="yellow", foreground="black")
 
-    def mark_filenames(self):
+    def _mark_filenames(self):
         '''Highlight files in the text: only those filenames that are in the same folder
            as the currently displayed textfile.
            Also mark these files in the treeview.
@@ -415,7 +427,7 @@ class MainWindow(TreeFollowerObserver):
         for filename in self.filenames:
             self.listbox.insert(tk.END, pretty_print_name(filename, 50))
 
-    def onListboxSelect(self, event) -> None:
+    def _onListboxSelect(self, event) -> None:
         self.top.after_idle(self.handle_listbox_select)
 
     def handle_listbox_select(self) -> None:
@@ -449,7 +461,7 @@ class MainWindow(TreeFollowerObserver):
         self.textfield.edit_modified(False)
 
     # Context menu event handlers
-    def show_context_menu(self, event) -> None:
+    def _show_context_menu(self, event) -> None:
         selected_items = self.listbox.curselection()
         if len(selected_items) > 1:
             self.context_menu.entryconfig("Save selected items", state=tk.NORMAL)
