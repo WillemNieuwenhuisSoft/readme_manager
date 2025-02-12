@@ -1,5 +1,5 @@
 from pathlib import Path
-from bioview.gui import pretty_print, pretty_print_name
+from bioview.pretty_print_paths import pretty_print, pretty_print_name
 from bioview.load_readme import read_file_contents
 
 
