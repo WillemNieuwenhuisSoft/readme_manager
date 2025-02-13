@@ -167,6 +167,7 @@ class MainWindow(TreeFollowerObserver):
         self.edit_tooltip = Tooltip(self.edit_button, "Edit: Disabled")
         Tooltip(self.save_changes_button, "Save changes")
         Tooltip(search_button, "Search")
+        Tooltip(mark_button, "Mark in tree")
 
     def build_right_frame(self, right_frame: tk.Frame):
         # Create a label for the filename
@@ -367,24 +368,36 @@ class MainWindow(TreeFollowerObserver):
         search_term = ['locations', 'pipo', 'raster']
         self.search_text(search_term)
 
+    def _mark_with_tag(self, items: list[str], tag: str, fg: str, bg: str) -> list[str]:
+        '''Mark the items in the textfield with the given tag
+              and set the foreground and background colors
+              Return a list of the items that were actually found in the text
+        '''
+        self.textfield.tag_remove(tag, "1.0", tk.END)
+
+        found_items = []
+        for item in items:
+            start_pos = "1.0"
+            while True:
+                start_pos = self.textfield.search(item, start_pos, stopindex=tk.END)
+                if not start_pos:
+                    break
+                found_items.append(item)
+                end_pos = f"{start_pos}+{len(item)}c"
+                self.textfield.tag_add(tag, start_pos, end_pos)
+                start_pos = end_pos
+
+        self.textfield.tag_configure(tag, background=bg, foreground=fg)
+
+        return found_items
+
     def search_text(self, search_terms: list[str]) -> None:
         """Search for the given term in the textfield and highlight matches."""
-        self.textfield.tag_remove("search", "1.0", tk.END)  # Remove previous search highlights
 
         if not search_terms:
             return
 
-        for term in search_terms:
-            start_pos = "1.0"
-            while True:
-                start_pos = self.textfield.search(term, start_pos, stopindex=tk.END)
-                if not start_pos:
-                    break
-                end_pos = f"{start_pos}+{len(term)}c"
-                self.textfield.tag_add("search", start_pos, end_pos)
-                start_pos = end_pos
-
-        self.textfield.tag_configure("search", background="yellow", foreground="black")
+        _ = self._mark_with_tag(search_terms, "search", fg="black", bg="yellow")
 
     def _mark_filenames(self):
         '''Highlight files in the text: only those filenames that are in the same folder
@@ -394,21 +407,9 @@ class MainWindow(TreeFollowerObserver):
         if self.current_filename is None:
             return
 
-        found_files = []
         path = self.current_filename.parent
-        self.textfield.tag_remove("mark", "1.0", tk.END)
-        for filename in path.iterdir():
-            start_pos = "1.0"
-            while True:
-                start_pos = self.textfield.search(filename.name, start_pos, stopindex=tk.END)
-                if not start_pos:
-                    break
-                found_files.append(filename.name)
-                end_pos = f"{start_pos}+{len(filename.name)}c"
-                self.textfield.tag_add("mark", start_pos, end_pos)
-                start_pos = end_pos
-
-        self.textfield.tag_configure("mark", background="lightblue", foreground="black")
+        filenames = [filename.name for filename in path.iterdir()]
+        found_files = self._mark_with_tag(filenames, "mark", fg="black", bg="lightblue")
 
         self.dirtree.highlight_filenames(path, found_files)
 
