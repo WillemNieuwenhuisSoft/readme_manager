@@ -29,7 +29,14 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
 ]
-dependencies = ["pandas", "xlsxwriter", "openpyxl", "scipy", "pillow"]
+dependencies = [
+  "pandas",
+  "xlsxwriter",
+  "openpyxl",
+  "scipy",
+  "pillow",
+  "watchdog",
+]
 [project.optional-dependencies]
 dev = ["check-manifest", "build"]
 test = ["pytest", "pytest-cov", "flake8", "mock"]
