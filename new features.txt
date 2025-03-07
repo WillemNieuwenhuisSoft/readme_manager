@@ -1,0 +1,17 @@
+1. Add filter in treeview to toggle view between all files and only readme files
+
+2. parse readme file to then highlight files in treeview covered by this readme file
+
+2a. (option: use filenames as search items in readme file)
+
+2b. (option: highlight only undocumented filenames)
+
+2c. (option: recognize multifile datafiles, such as shapefile, envi-raster)
+
+3.Change listbox to list only recently opened/changed
+
+4. When a file is moved to a different folder, move the text segment in the readme file to the readme file in the target folder
+
+5. selecting a file in the treeview: add option to insert it to the readme file (if not yet there)
+
+6. Rename a file in the treeview: rename it in the readme as well.
